@@ -1,0 +1,107 @@
+PATH
+  remote: ../csvbuilder-core
+  specs:
+    csvbuilder-core (0.1.0)
+      activesupport (= 5.2.8.1)
+
+PATH
+  remote: ../csvbuilder-importer
+  specs:
+    csvbuilder-importer (0.1.0)
+      activemodel (= 5.2.8.1)
+      activesupport (= 5.2.8.1)
+      csvbuilder-core
+
+PATH
+  remote: .
+  specs:
+    csvbuilder (0.1.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    activemodel (5.2.8.1)
+      activesupport (= 5.2.8.1)
+    activerecord (5.2.8.1)
+      activemodel (= 5.2.8.1)
+      activesupport (= 5.2.8.1)
+      arel (>= 9.0)
+    activesupport (5.2.8.1)
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      i18n (>= 0.7, < 2)
+      minitest (~> 5.1)
+      tzinfo (~> 1.1)
+    arel (9.0.0)
+    ast (2.4.2)
+    concurrent-ruby (1.1.10)
+    diff-lcs (1.5.0)
+    i18n (1.12.0)
+      concurrent-ruby (~> 1.0)
+    json (2.6.3)
+    minitest (5.16.3)
+    parallel (1.22.1)
+    parser (3.1.2.1)
+      ast (~> 2.4.1)
+    rainbow (3.1.1)
+    rake (13.0.6)
+    regexp_parser (2.6.1)
+    rexml (3.2.5)
+    rspec (3.12.0)
+      rspec-core (~> 3.12.0)
+      rspec-expectations (~> 3.12.0)
+      rspec-mocks (~> 3.12.0)
+    rspec-core (3.12.0)
+      rspec-support (~> 3.12.0)
+    rspec-expectations (3.12.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.12.0)
+    rspec-mocks (3.12.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.12.0)
+    rspec-support (3.12.0)
+    rubocop (1.39.0)
+      json (~> 2.3)
+      parallel (~> 1.10)
+      parser (>= 3.1.2.1)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 1.8, < 3.0)
+      rexml (>= 3.2.5, < 4.0)
+      rubocop-ast (>= 1.23.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 1.4.0, < 3.0)
+    rubocop-ast (1.23.0)
+      parser (>= 3.1.1.0)
+    rubocop-performance (1.15.1)
+      rubocop (>= 1.7.0, < 2.0)
+      rubocop-ast (>= 0.4.0)
+    rubocop-rake (0.6.0)
+      rubocop (~> 1.0)
+    rubocop-rspec (2.15.0)
+      rubocop (~> 1.33)
+    ruby-progressbar (1.11.0)
+    sqlite3 (1.5.0-arm64-darwin)
+    sqlite3 (1.5.0-x86_64-darwin)
+    thread_safe (0.3.6)
+    tzinfo (1.2.10)
+      thread_safe (~> 0.1)
+    unicode-display_width (2.3.0)
+
+PLATFORMS
+  arm64-darwin-21
+  x86_64-darwin-21
+
+DEPENDENCIES
+  activerecord
+  csvbuilder!
+  csvbuilder-core!
+  csvbuilder-importer!
+  rake
+  rspec
+  rubocop
+  rubocop-performance
+  rubocop-rake
+  rubocop-rspec
+  sqlite3
+
+BUNDLED WITH
+   2.3.22
