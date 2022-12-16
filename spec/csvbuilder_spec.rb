@@ -30,6 +30,7 @@ RSpec.describe Csvbuilder do
       expect do
         user.save
       end.to change(User, :count).by(+1)
+      expect(user.full_name).to eq("John Doe")
     end
   end
 end

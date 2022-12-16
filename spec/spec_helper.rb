@@ -2,12 +2,12 @@
 
 require "csvbuilder"
 require "active_record"
-require "logger"
+# require "logger"
 require "tempfile"
 
 ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
-ActiveRecord::Base.logger = Logger.new($stdout)
-ActiveRecord::Migration.verbose = true
+# ActiveRecord::Base.logger = Logger.new($stdout)
+# ActiveRecord::Migration.verbose = true
 
 Dir["#{Dir.pwd}/spec/support/**/*.rb"].sort.each { |f| require f }
 
