@@ -30,10 +30,12 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  # spec.add_dependency "csvbuilder-core"
-  # spec.add_dependency "csvbuilder-importer"
+  spec.add_dependency "csvbuilder-core"
+  spec.add_dependency "csvbuilder-importer"
 
   spec.add_development_dependency "activerecord"
+
   spec.add_development_dependency "sqlite3"
+
   spec.metadata["rubygems_mfa_required"] = "true"
 end

@@ -15,5 +15,5 @@ gem "rubocop-performance"
 gem "rubocop-rake"
 gem "rubocop-rspec"
 
-gem "csvbuilder-core", path: "../csvbuilder-core"
-gem "csvbuilder-importer", path: "../csvbuilder-importer"
+# gem "csvbuilder-core", path: "../csvbuilder-core"
+# gem "csvbuilder-importer", path: "../csvbuilder-importer"
