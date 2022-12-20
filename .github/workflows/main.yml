@@ -79,7 +79,10 @@ jobs:
           gem install bundler
       -
         name: Bundle Install ${{ matrix.gemfile }}
-        run: bundle install
+        run: |
+          bundle install
+          bundle update csvbuilder-core
+          bundle update gem "csvbuilder-importer
       -
         name: Run test suite
         run: |
