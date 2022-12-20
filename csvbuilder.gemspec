@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "csvbuilder-core"
   spec.add_dependency "csvbuilder-importer"
 
-  spec.add_development_dependency "activerecord"
+  spec.add_development_dependency "activerecord", ">= 5.2", "< 8"
 
   spec.add_development_dependency "sqlite3"
 
