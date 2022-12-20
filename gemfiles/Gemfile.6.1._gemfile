@@ -7,8 +7,8 @@ gem "activemodel", "~> 6.1"
 gem "activerecord", "~> 6.1"
 
 # Libraries dependencies
-gem "csvbuilder-core", "0.1.2"
-gem "csvbuilder-importer", "0.1.2"
+gem "csvbuilder-core"
+gem "csvbuilder-importer"
 
 # Test dependencies
 gem "activesupport", "~> 6.1"
