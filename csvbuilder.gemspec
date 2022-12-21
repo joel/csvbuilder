@@ -31,6 +31,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "csvbuilder-core", "~> 0.1"
+  spec.add_dependency "csvbuilder-exporter", "~> 0.1"
   spec.add_dependency "csvbuilder-importer", "~> 0.1"
 
   spec.add_development_dependency "activerecord", ">= 5.2", "< 8"

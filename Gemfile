@@ -17,3 +17,4 @@ gem "rubocop-rspec"
 
 # gem "csvbuilder-core", path: "../csvbuilder-core"
 # gem "csvbuilder-importer", path: "../csvbuilder-importer"
+# gem "csvbuilder-exporter", path: "../csvbuilder-exporter"

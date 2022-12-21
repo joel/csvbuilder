@@ -21,3 +21,12 @@ class BasicImportModel < BasicRowModel
     User.new(first_name: first_name, last_name: last_name, full_name: full_name)
   end
 end
+
+#
+# Export
+#
+class BasicExportModel < BasicRowModel
+  include Csvbuilder::Export
+
+  column :full_name, header: "Full Name"
+end
