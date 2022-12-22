@@ -79,6 +79,7 @@ RSpec.describe Csvbuilder do
 
       context "with dynamic columns" do
         describe "import" do
+          let(:import_model) { DynamicColumnsImportModel }
           let(:csv_source) do
             [
               ["First name", "Last name", "Ruby", "Python", "Javascript"],
@@ -87,7 +88,7 @@ RSpec.describe Csvbuilder do
           end
 
           it "addses skills to users" do
-            Csvbuilder::Import::File.new(file.path, DynamicColumnsImportModel, options).each do |row_model|
+            Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
               row_model.skills.each do |skill_data|
                 skill = Skill.find_or_create_by(name: skill_data[:name])
                 row_model.user.skills << skill if skill_data[:level] == "1"
@@ -108,14 +109,13 @@ RSpec.describe Csvbuilder do
           after { User.last.skills.delete_all }
 
           describe "export" do
-            let(:context)     { { skills: Skill.pluck(:name) } }
-            let(:sub_context) { {} }
-            let(:exporter)    { Csvbuilder::Export::File.new(export_model, context) }
-            let(:row_model)   { DynamicColumnsRowModel }
+            let(:context)      { { skills: Skill.pluck(:name) } }
+            let(:sub_context)  { {} }
+            let(:exporter)     { Csvbuilder::Export::File.new(export_model, context) }
+            let(:row_model)    { DynamicColumnsRowModel }
+            let(:export_model) { DynamicColumnsExportModel }
 
             context "with bare export model" do
-              let(:export_model) { DynamicColumnsExportModel }
-
               it "has the right headers" do
                 expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
               end
@@ -149,11 +149,19 @@ RSpec.describe Csvbuilder do
                         context: context.to_h
                       }
                     end
+
+                    # Safe to override. Method applied to each dynamic_column attribute
+                    #
+                    # @param cells [Array] Array of values
+                    # @param column_name [Symbol] Dynamic column name
+                    def format_dynamic_column_cells(cells, _column_name, _context)
+                      cells
+                    end
                   end
                 end
               end
 
-              it "shows the dynamic headers" do
+              it "shows the formatted dynamic headers" do
                 expect(row_model.dynamic_column_headers(context)).to eq(
                   [
                     {
@@ -172,21 +180,20 @@ RSpec.describe Csvbuilder do
                   ]
                 )
               end
-              # it "should have the right headers" do
-              #   expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
-              # end
 
-              # it "should export users with their skills" do
-              #   expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+              it "has the right headers" do
+                expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+              end
 
-              #   exporter.generate do |csv|
-              #     User.all.each do |user|
-              #       csv.append_model(user, sub_context)
-              #     end
-              #   end
+              it "exports users with their skills" do
+                exporter.generate do |csv|
+                  User.all.each do |user|
+                    csv.append_model(user, sub_context)
+                  end
+                end
 
-              #   expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
-              # end
+                expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
+              end
             end
           end
         end
