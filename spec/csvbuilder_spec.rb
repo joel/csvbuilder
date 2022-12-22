@@ -2,6 +2,11 @@
 
 RSpec.describe Csvbuilder do
   describe "import" do
+    before do
+      User.delete_all
+      Skill.delete_all
+    end
+
     let(:csv_source) do
       [
         ["First name", "Last name"],
