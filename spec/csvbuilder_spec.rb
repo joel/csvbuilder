@@ -44,6 +44,10 @@ RSpec.describe Csvbuilder do
       User.create(first_name: "John", last_name: "Doe", full_name: "John Doe")
     end
 
+    after do
+      User.delete_all
+    end
+
     it "export users" do
       exporter = Csvbuilder::Export::File.new(BasicExportModel, context)
       expect(exporter.headers).to eq(["First Name", "Last Name", "Full Name"])
@@ -62,6 +66,14 @@ RSpec.describe Csvbuilder do
 
     before do
       User.create(first_name: "John", last_name: "Doe", full_name: "John Doe")
+      ["Ruby", "Python", "Javascript"].each do |skill_name|
+        Skill.create(name: skill_name)
+      end
+    end
+
+     after do
+      User.delete_all
+      Skill.delete_all
     end
 
     describe "import" do
@@ -101,17 +113,26 @@ RSpec.describe Csvbuilder do
       end
     end
 
-    # describe "export" do
-    #   exporter = Csvbuilder::Export::File.new(BasicExportModel, context)
-    #   expect(exporter.headers).to eq(["First Name", "Last Name", "Full Name"])
+    describe "export" do
+      let(:context) { { skills: Skill.pluck(:name)  } }
+      let(:sub_context) { {} }
 
-    #   exporter.generate do |csv|
-    #     User.all.each do |user|
-    #       csv.append_model(user, another_context: true)
-    #     end
-    #   end
+      before do
+        User.where(full_name: "John Doe").take.skills << Skill.where(name: "Ruby")
+      end
 
-    #   expect(exporter.to_s).to eq("First Name,Last Name,Full Name\nJohn,Doe,John Doe\nJohn,Doe,John Doe\n")
-    # end
+      it "export users with their skills" do
+        exporter = Csvbuilder::Export::File.new(DynamicColumnsExportModel, context)
+        expect(exporter.headers).to eq(["Name", "Surname", "Ruby", "Python", "Javascript"])
+
+        exporter.generate do |csv|
+          User.all.each do |user|
+            csv.append_model(user, sub_context)
+          end
+        end
+
+        expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
+      end
+    end
   end
 end

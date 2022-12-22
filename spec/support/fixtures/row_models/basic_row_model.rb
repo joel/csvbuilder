@@ -36,8 +36,8 @@ end
 class DynamicColumnsRowModel
   include Csvbuilder::Model
 
-  column :first_name
-  column :last_name
+  column :first_name, header: "Name"
+  column :last_name, header: "Surname"
 
   dynamic_column :skills
 end
@@ -54,5 +54,24 @@ class DynamicColumnsImportModel < DynamicColumnsRowModel
 
   def skill(value, skill_name)
     { name: skill_name, level: value }
+  end
+end
+
+#
+# Export
+#
+class DynamicColumnsExportModel < DynamicColumnsRowModel
+  include Csvbuilder::Export
+
+  # def first_name
+  #   source_model.first_name
+  # end
+
+  # def last_name
+  #   source_model.last_name
+  # end
+
+  def skill(skill_name)
+    source_model.skills.where(name: skill_name).exists? ? "1" : "0"
   end
 end
