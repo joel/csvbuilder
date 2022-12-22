@@ -1,10 +1,23 @@
 # frozen_string_literal: true
 
 RSpec.describe Csvbuilder do
-  context "without user" do
-    before do
-      User.delete_all
+  let(:csv_string) do
+    CSV.generate do |csv|
+      csv_source.each { |row| csv << row }
     end
+  end
+
+  let(:file) do
+    file = Tempfile.new(["input_file", ".csv"])
+    file.write(csv_string)
+    file.rewind
+    file
+  end
+
+  let(:options) { {} }
+
+  context "without user" do
+    before { User.delete_all }
 
     describe "import" do
       let(:csv_source) do
@@ -13,21 +26,6 @@ RSpec.describe Csvbuilder do
           %w[John Doe]
         ]
       end
-
-      let(:csv_string) do
-        CSV.generate do |csv|
-          csv_source.each { |row| csv << row }
-        end
-      end
-
-      let(:file) do
-        file = Tempfile.new(["input_file", ".csv"])
-        file.write(csv_string)
-        file.rewind
-        file
-      end
-
-      let(:options) { {} }
 
       it "imports users" do
         Csvbuilder::Import::File.new(file.path, BasicImportModel, options).each do |row_model|
@@ -79,67 +77,88 @@ RSpec.describe Csvbuilder do
 
       after { Skill.delete_all }
 
-      context "for dynamic columns"
-      describe "import" do
-        let(:csv_source) do
-          [
-            ["First name", "Last name", "Ruby", "Python", "Javascript"],
-            %w[John Doe 1 0 1]
-          ]
-        end
-
-        let(:csv_string) do
-          CSV.generate do |csv|
-            csv_source.each { |row| csv << row }
+      context "with dynamic columns" do
+        describe "import" do
+          let(:csv_source) do
+            [
+              ["First name", "Last name", "Ruby", "Python", "Javascript"],
+              %w[John Doe 1 0 1]
+            ]
           end
-        end
 
-        let(:file) do
-          file = Tempfile.new(["input_file", ".csv"])
-          file.write(csv_string)
-          file.rewind
-          file
-        end
+          it "addses skills to users" do
+            Csvbuilder::Import::File.new(file.path, DynamicColumnsImportModel, options).each do |row_model|
+              row_model.skills.each do |skill_data|
+                skill = Skill.find_or_create_by(name: skill_data[:name])
+                row_model.user.skills << skill if skill_data[:level] == "1"
+              end
 
-        let(:options) { {} }
-
-        it "adds skills to users" do
-          Csvbuilder::Import::File.new(file.path, DynamicColumnsImportModel, options).each do |row_model|
-            row_model.skills.each do |skill_data|
-              skill = Skill.find_or_create_by(name: skill_data[:name])
-              row_model.user.skills << skill if skill_data[:level] == "1"
+              expect(row_model.user.skills).to be_truthy
+              expect(row_model.user.skills.count).to eq(2)
+              expect(row_model.user.skills.map(&:name)).to match_array(%w[Ruby Javascript])
             end
-
-            expect(row_model.user.skills).to be_truthy
-            expect(row_model.user.skills.count).to eq(2)
-            expect(row_model.user.skills.map(&:name)).to match_array(%w[Ruby Javascript])
           end
         end
-      end
 
-      context "with skilled user" do
-        before do
-          User.last.skills << Skill.where(name: "Ruby")
-        end
+        context "with skilled user" do
+          before do
+            User.last.skills << Skill.where(name: "Ruby")
+          end
 
-        after { User.last.skills.delete_all }
+          after { User.last.skills.delete_all }
 
-        describe "export" do
-          let(:context)     { { skills: Skill.pluck(:name) } }
-          let(:sub_context) { {} }
-          let(:export_model) { DynamicColumnsExportModel }
+          describe "export" do
+            let(:context)     { { skills: Skill.pluck(:name) } }
+            let(:sub_context) { {} }
+            let(:exporter)    { Csvbuilder::Export::File.new(export_model, context) }
 
-          it "export users with their skills" do
-            exporter = Csvbuilder::Export::File.new(export_model, context)
-            expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+            context "with bare export model" do
+              let(:export_model) { DynamicColumnsExportModel }
 
-            exporter.generate do |csv|
-              User.all.each do |user|
-                csv.append_model(user, sub_context)
+              it "has the right headers" do
+                expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+              end
+
+              it "export users with their skills" do
+                exporter.generate do |csv|
+                  User.all.each do |user|
+                    csv.append_model(user, sub_context)
+                  end
+                end
+
+                expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
               end
             end
 
-            expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
+            # context "with overriden export model" do
+            #   let(:export_model) do
+            #     Class.new(DynamicColumnsExportModel) do
+            #       # Safe to override
+            #       #
+            #       # @return [String] formatted header
+            #       def format_dynamic_column_header(header_model, _column_name, _context)
+            #         header_model
+            #       end
+            #     end
+            #   end
+
+            #               it "should have the right headers" do
+            #     expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+            #   end
+
+            #   it "should export users with their skills" do
+            #     exporter = Csvbuilder::Export::File.new(export_model, context)
+            #     expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+
+            #     exporter.generate do |csv|
+            #       User.all.each do |user|
+            #         csv.append_model(user, sub_context)
+            #       end
+            #     end
+
+            #     expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
+            #   end
+            # end
           end
         end
       end
