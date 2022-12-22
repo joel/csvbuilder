@@ -88,12 +88,59 @@ RSpec.describe Csvbuilder do
             ]
           end
 
-          context "with bare export model" do
-            it "addses skills to users" do
+          context "with bare import model" do
+            it "adds skills to users" do
               Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
                 row_model.skills.each do |skill_data|
                   skill = Skill.find_or_create_by(name: skill_data[:name])
                   row_model.user.skills << skill if skill_data[:level] == "1"
+                end
+
+                expect(row_model.user.skills).to be_truthy
+                expect(row_model.user.skills.count).to eq(2)
+                expect(row_model.user.skills.map(&:name)).to match_array(%w[Ruby Javascript])
+              end
+            end
+          end
+
+          context "with overriden import model" do
+            let(:row_model) do
+              Class.new(DynamicColumnsRowModel) do
+                class << self
+                  # Safe to override. Method applied to each dynamic_column attribute
+                  #
+                  # @param cells [Array] Array of values
+                  # @param column_name [Symbol] Dynamic column name
+                  def format_dynamic_column_cells(cells, _column_name, _context)
+                    cells.select { |e| e[:level] == "1" }.map { |e| e[:name] }
+                  end
+                end
+              end
+            end
+            let(:import_model) do
+              Class.new(row_model) do
+                include Csvbuilder::Import
+                class << self
+                  def name
+                    "DynamicColumnsImportModel"
+                  end
+                end
+
+                def user
+                  User.find_by(full_name: "#{first_name} #{last_name}")
+                end
+
+                def skill(value, skill_name)
+                  { name: skill_name, level: value }
+                end
+              end
+            end
+
+            it "adds skills to users" do
+              Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
+                row_model.skills.each do |skill_name|
+                  skill = Skill.find_or_create_by(name: skill_name)
+                  row_model.user.skills << skill
                 end
 
                 expect(row_model.user.skills).to be_truthy
