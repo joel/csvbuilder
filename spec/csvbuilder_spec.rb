@@ -40,25 +40,30 @@ RSpec.describe Csvbuilder do
   describe "export" do
     let(:context) { {} }
 
-    before do
-      User.create(first_name: "John", last_name: "Doe", full_name: "John Doe")
-    end
+    context "with records" do
+      subject(:exporter) { Csvbuilder::Export::File.new(BasicExportModel, context) }
 
-    after do
-      User.delete_all
-    end
-
-    it "export users" do
-      exporter = Csvbuilder::Export::File.new(BasicExportModel, context)
-      expect(exporter.headers).to eq(["First Name", "Last Name", "Full Name"])
-
-      exporter.generate do |csv|
-        User.all.each do |user|
-          csv.append_model(user, another_context: true)
-        end
+      before do
+        User.create(first_name: "John", last_name: "Doe", full_name: "John Doe")
       end
 
-      expect(exporter.to_s).to eq("First Name,Last Name,Full Name\nJohn,Doe,John Doe\nJohn,Doe,John Doe\n")
+      after do
+        User.delete_all
+      end
+
+      it "has the right headers" do
+        expect(exporter.headers).to eq(["First Name", "Last Name", "Full Name"])
+      end
+
+      it "exports users data as CSV" do
+        exporter.generate do |csv|
+          User.all.each do |user|
+            csv.append_model(user, another_context: true)
+          end
+        end
+
+        expect(exporter.to_s).to eq("First Name,Last Name,Full Name\nJohn,Doe,John Doe\n")
+      end
     end
   end
 
