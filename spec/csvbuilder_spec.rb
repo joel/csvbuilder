@@ -125,11 +125,12 @@ RSpec.describe Csvbuilder do
         after { User.last.skills.delete_all }
 
         describe "export" do
-          let(:context) { { skills: Skill.pluck(:name) } }
+          let(:context)     { { skills: Skill.pluck(:name) } }
           let(:sub_context) { {} }
+          let(:export_model) { DynamicColumnsExportModel }
 
           it "export users with their skills" do
-            exporter = Csvbuilder::Export::File.new(DynamicColumnsExportModel, context)
+            exporter = Csvbuilder::Export::File.new(export_model, context)
             expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
 
             exporter.generate do |csv|
