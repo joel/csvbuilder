@@ -33,3 +33,6 @@ RSpec/MultipleMemoizedHelpers:
 # Configuration parameters: AllowedGroups.
 RSpec/NestedGroups:
   Max: 7
+
+Style/OpenStructUse:
+  Enabled: false

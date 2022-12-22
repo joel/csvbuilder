@@ -112,7 +112,7 @@ RSpec.describe Csvbuilder do
                   # @param cells [Array] Array of values
                   # @param column_name [Symbol] Dynamic column name
                   def format_dynamic_column_cells(cells, _column_name, _context)
-                    cells.select { |e| e[:level] == "1" }.map { |e| e[:name] }
+                    cells.select(&:has?).map(&:name)
                   end
                 end
               end
@@ -131,7 +131,11 @@ RSpec.describe Csvbuilder do
                 end
 
                 def skill(value, skill_name)
-                  { name: skill_name, level: value }
+                  Class.new(OpenStruct) do
+                    def has?
+                      has == "1"
+                    end
+                  end.new({ name: skill_name, has: value })
                 end
               end
             end
