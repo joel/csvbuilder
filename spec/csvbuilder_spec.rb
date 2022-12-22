@@ -63,15 +63,14 @@ RSpec.describe Csvbuilder do
   end
 
   context "with dynamic columns" do
-
     before do
       User.create(first_name: "John", last_name: "Doe", full_name: "John Doe")
-      ["Ruby", "Python", "Javascript"].each do |skill_name|
+      %w[Ruby Python Javascript].each do |skill_name|
         Skill.create(name: skill_name)
       end
     end
 
-     after do
+    after do
       User.delete_all
       Skill.delete_all
     end
@@ -80,7 +79,7 @@ RSpec.describe Csvbuilder do
       let(:csv_source) do
         [
           ["First name", "Last name", "Ruby", "Python", "Javascript"],
-          ["John",       "Doe",       "1",    "0",      "1"         ]
+          %w[John Doe 1 0 1]
         ]
       end
 
@@ -114,7 +113,7 @@ RSpec.describe Csvbuilder do
     end
 
     describe "export" do
-      let(:context) { { skills: Skill.pluck(:name)  } }
+      let(:context) { { skills: Skill.pluck(:name) } }
       let(:sub_context) { {} }
 
       before do
@@ -123,7 +122,7 @@ RSpec.describe Csvbuilder do
 
       it "export users with their skills" do
         exporter = Csvbuilder::Export::File.new(DynamicColumnsExportModel, context)
-        expect(exporter.headers).to eq(["Name", "Surname", "Ruby", "Python", "Javascript"])
+        expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
 
         exporter.generate do |csv|
           User.all.each do |user|
