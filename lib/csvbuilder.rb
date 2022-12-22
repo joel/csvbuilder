@@ -5,3 +5,5 @@ require_relative "csvbuilder/version"
 require "csvbuilder/core"
 require "csvbuilder/importer"
 require "csvbuilder/exporter"
+
+require "csvbuilder/dynamic/columns"

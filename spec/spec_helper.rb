@@ -29,10 +29,25 @@ ActiveRecord::Schema.define do
     t.string :last_name
     t.string :full_name
   end
+  create_table :skills_users, force: true do |t|
+    t.references :skill
+    t.references :user
+  end
+  create_table :skills, force: true do |t|
+    t.string :name
+  end
 end
 
 class User < ActiveRecord::Base
   self.table_name = :users
 
   validates :full_name, presence: true
+
+  has_and_belongs_to_many :skills, join_table: :skills_users
+end
+
+class Skill < ActiveRecord::Base
+  self.table_name = :skills
+
+  validates :name, presence: true
 end
