@@ -143,8 +143,7 @@ RSpec.describe Csvbuilder do
             it "adds skills to users" do
               Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
                 row_model.skills.each do |skill_name|
-                  skill = Skill.find_or_create_by(name: skill_name)
-                  row_model.user.skills << skill
+                  row_model.user.skills << Skill.find_or_create_by(name: skill_name)
                 end
 
                 expect(row_model.user.skills).to be_truthy
