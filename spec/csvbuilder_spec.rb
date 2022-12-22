@@ -79,6 +79,7 @@ RSpec.describe Csvbuilder do
 
       context "with dynamic columns" do
         describe "import" do
+          let(:row_model)    { DynamicColumnsRowModel }
           let(:import_model) { DynamicColumnsImportModel }
           let(:csv_source) do
             [
@@ -87,16 +88,18 @@ RSpec.describe Csvbuilder do
             ]
           end
 
-          it "addses skills to users" do
-            Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
-              row_model.skills.each do |skill_data|
-                skill = Skill.find_or_create_by(name: skill_data[:name])
-                row_model.user.skills << skill if skill_data[:level] == "1"
-              end
+          context "with bare export model" do
+            it "addses skills to users" do
+              Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
+                row_model.skills.each do |skill_data|
+                  skill = Skill.find_or_create_by(name: skill_data[:name])
+                  row_model.user.skills << skill if skill_data[:level] == "1"
+                end
 
-              expect(row_model.user.skills).to be_truthy
-              expect(row_model.user.skills.count).to eq(2)
-              expect(row_model.user.skills.map(&:name)).to match_array(%w[Ruby Javascript])
+                expect(row_model.user.skills).to be_truthy
+                expect(row_model.user.skills.count).to eq(2)
+                expect(row_model.user.skills.map(&:name)).to match_array(%w[Ruby Javascript])
+              end
             end
           end
         end
@@ -109,11 +112,11 @@ RSpec.describe Csvbuilder do
           after { User.last.skills.delete_all }
 
           describe "export" do
+            let(:row_model)    { DynamicColumnsRowModel }
+            let(:export_model) { DynamicColumnsExportModel }
             let(:context)      { { skills: Skill.pluck(:name) } }
             let(:sub_context)  { {} }
             let(:exporter)     { Csvbuilder::Export::File.new(export_model, context) }
-            let(:row_model)    { DynamicColumnsRowModel }
-            let(:export_model) { DynamicColumnsExportModel }
 
             context "with bare export model" do
               it "has the right headers" do
@@ -165,7 +168,6 @@ RSpec.describe Csvbuilder do
               it "shows the formatted dynamic headers" do
                 expect(row_model.dynamic_column_headers(context)).to eq(
                   [
-
                     "SKILLS: [Ruby]",
                     "SKILLS: [Python]",
                     "SKILLS: [Javascript]"
