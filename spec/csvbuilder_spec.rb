@@ -142,21 +142,22 @@ RSpec.describe Csvbuilder do
                     # Safe to override
                     #
                     # @return [String] formatted header
-                    def format_dynamic_column_header(header_model, column_name, context)
-                      {
-                        header_model: header_model,
-                        column_name: column_name,
-                        context: context.to_h
-                      }
+                    def format_dynamic_column_header(header_model, column_name, _context)
+                      "#{column_name.upcase}: [#{header_model}]"
                     end
-
-                    # Safe to override. Method applied to each dynamic_column attribute
-                    #
-                    # @param cells [Array] Array of values
-                    # @param column_name [Symbol] Dynamic column name
-                    def format_dynamic_column_cells(cells, _column_name, _context)
-                      cells
+                  end
+                end
+              end
+              let(:export_model) do
+                Class.new(row_model) do
+                  include Csvbuilder::Export
+                  class << self
+                    def name
+                      "DynamicColumnsExportModel"
                     end
+                  end
+                  def skill(skill_name)
+                    source_model.skills.where(name: skill_name).exists? ? "1" : "0"
                   end
                 end
               end
@@ -164,25 +165,24 @@ RSpec.describe Csvbuilder do
               it "shows the formatted dynamic headers" do
                 expect(row_model.dynamic_column_headers(context)).to eq(
                   [
-                    {
-                      column_name: :skills,
-                      context: { skills: %w[Ruby Python Javascript] },
-                      header_model: "Ruby"
-                    }, {
-                      column_name: :skills,
-                      context: { skills: %w[Ruby Python Javascript] },
-                      header_model: "Python"
-                    }, {
-                      column_name: :skills,
-                      context: { skills: %w[Ruby Python Javascript] },
-                      header_model: "Javascript"
-                    }
+
+                    "SKILLS: [Ruby]",
+                    "SKILLS: [Python]",
+                    "SKILLS: [Javascript]"
                   ]
                 )
               end
 
               it "has the right headers" do
-                expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+                expect(exporter.headers).to eq(
+                  [
+                    "Name",
+                    "Surname",
+                    "SKILLS: [Ruby]",
+                    "SKILLS: [Python]",
+                    "SKILLS: [Javascript]"
+                  ]
+                )
               end
 
               it "exports users with their skills" do
@@ -192,7 +192,7 @@ RSpec.describe Csvbuilder do
                   end
                 end
 
-                expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
+                expect(exporter.to_s).to eq("Name,Surname,SKILLS: [Ruby],SKILLS: [Python],SKILLS: [Javascript]\nJohn,Doe,1,0,0\n")
               end
             end
           end
