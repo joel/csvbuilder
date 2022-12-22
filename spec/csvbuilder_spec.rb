@@ -155,15 +155,21 @@ RSpec.describe Csvbuilder do
 
               it "shows the dynamic headers" do
                 expect(row_model.dynamic_column_headers(context)).to eq(
-                  [{ column_name: :skills,
-                     context: { skills: %w[Ruby Python Javascript] },
-                     header_model: "Ruby" },
-                   { column_name: :skills,
-                     context: { skills: %w[Ruby Python Javascript] },
-                     header_model: "Python" },
-                   { column_name: :skills,
-                     context: { skills: %w[Ruby Python Javascript] },
-                     header_model: "Javascript" }]
+                  [
+                    {
+                      column_name: :skills,
+                      context: { skills: %w[Ruby Python Javascript] },
+                      header_model: "Ruby"
+                    }, {
+                      column_name: :skills,
+                      context: { skills: %w[Ruby Python Javascript] },
+                      header_model: "Python"
+                    }, {
+                      column_name: :skills,
+                      context: { skills: %w[Ruby Python Javascript] },
+                      header_model: "Javascript"
+                    }
+                  ]
                 )
               end
               # it "should have the right headers" do
