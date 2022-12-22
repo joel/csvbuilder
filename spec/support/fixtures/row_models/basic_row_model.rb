@@ -63,14 +63,6 @@ end
 class DynamicColumnsExportModel < DynamicColumnsRowModel
   include Csvbuilder::Export
 
-  # def first_name
-  #   source_model.first_name
-  # end
-
-  # def last_name
-  #   source_model.last_name
-  # end
-
   def skill(skill_name)
     source_model.skills.where(name: skill_name).exists? ? "1" : "0"
   end
