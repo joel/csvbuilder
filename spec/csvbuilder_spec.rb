@@ -111,12 +111,17 @@ RSpec.describe Csvbuilder do
             let(:context)     { { skills: Skill.pluck(:name) } }
             let(:sub_context) { {} }
             let(:exporter)    { Csvbuilder::Export::File.new(export_model, context) }
+            let(:row_model)   { DynamicColumnsRowModel }
 
             context "with bare export model" do
               let(:export_model) { DynamicColumnsExportModel }
 
               it "has the right headers" do
                 expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+              end
+
+              it "shows the dynamic headers" do
+                expect(row_model.dynamic_column_headers(context)).to eq(%w[Ruby Python Javascript])
               end
 
               it "export users with their skills" do
@@ -130,35 +135,53 @@ RSpec.describe Csvbuilder do
               end
             end
 
-            # context "with overriden export model" do
-            #   let(:export_model) do
-            #     Class.new(DynamicColumnsExportModel) do
-            #       # Safe to override
-            #       #
-            #       # @return [String] formatted header
-            #       def format_dynamic_column_header(header_model, _column_name, _context)
-            #         header_model
-            #       end
-            #     end
-            #   end
+            context "with overriden export model" do
+              let(:row_model) do
+                Class.new(DynamicColumnsRowModel) do
+                  class << self
+                    # Safe to override
+                    #
+                    # @return [String] formatted header
+                    def format_dynamic_column_header(header_model, column_name, context)
+                      {
+                        header_model: header_model,
+                        column_name: column_name,
+                        context: context.to_h
+                      }
+                    end
+                  end
+                end
+              end
 
-            #               it "should have the right headers" do
-            #     expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
-            #   end
+              it "shows the dynamic headers" do
+                expect(row_model.dynamic_column_headers(context)).to eq(
+                  [{ column_name: :skills,
+                     context: { skills: %w[Ruby Python Javascript] },
+                     header_model: "Ruby" },
+                   { column_name: :skills,
+                     context: { skills: %w[Ruby Python Javascript] },
+                     header_model: "Python" },
+                   { column_name: :skills,
+                     context: { skills: %w[Ruby Python Javascript] },
+                     header_model: "Javascript" }]
+                )
+              end
+              # it "should have the right headers" do
+              #   expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+              # end
 
-            #   it "should export users with their skills" do
-            #     exporter = Csvbuilder::Export::File.new(export_model, context)
-            #     expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+              # it "should export users with their skills" do
+              #   expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
 
-            #     exporter.generate do |csv|
-            #       User.all.each do |user|
-            #         csv.append_model(user, sub_context)
-            #       end
-            #     end
+              #   exporter.generate do |csv|
+              #     User.all.each do |user|
+              #       csv.append_model(user, sub_context)
+              #     end
+              #   end
 
-            #     expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
-            #   end
-            # end
+              #   expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
+              # end
+            end
           end
         end
       end
