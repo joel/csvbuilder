@@ -16,10 +16,8 @@ RSpec.describe "Import" do
     end
   end
 
-  let(:export_model) do
+  let(:import_model) do
     Class.new(row_model) do
-      include Csvbuilder::Export
-
       include Csvbuilder::Import
 
       def full_name
@@ -44,7 +42,7 @@ RSpec.describe "Import" do
       end
 
       it "imports users" do
-        Csvbuilder::Import::File.new(file.path, BasicImportModel, options).each do |row_model|
+        Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
           user = row_model.user
           expect(user).to be_valid
           expect do
