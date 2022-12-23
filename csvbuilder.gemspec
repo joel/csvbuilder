@@ -31,7 +31,9 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "csvbuilder-core", "~> 0.1"
-  spec.add_dependency "csvbuilder-dynamic-columns", "~> 0.1"
+  spec.add_dependency "csvbuilder-dynamic-columns-core", "~> 0.1"
+  spec.add_dependency "csvbuilder-dynamic-columns-exporter", "~> 0.1"
+  spec.add_dependency "csvbuilder-dynamic-columns-importer", "~> 0.1"
   spec.add_dependency "csvbuilder-exporter", "~> 0.1"
   spec.add_dependency "csvbuilder-importer", "~> 0.1"
 

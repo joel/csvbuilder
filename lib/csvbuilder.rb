@@ -6,4 +6,6 @@ require "csvbuilder/core"
 require "csvbuilder/importer"
 require "csvbuilder/exporter"
 
-require "csvbuilder/dynamic/columns"
+require "csvbuilder/dynamic/columns/core"
+require "csvbuilder/dynamic/columns/importer"
+require "csvbuilder/dynamic/columns/exporter"
