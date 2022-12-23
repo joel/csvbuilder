@@ -11,6 +11,14 @@ RSpec.describe "Import With Dynamic Columns" do
       dynamic_column :skills
 
       class << self
+        # Safe to override. Method applied to each dynamic_column attribute
+        #
+        # @param cells [Array] Array of values
+        # @param column_name [Symbol] Dynamic column name
+        def format_dynamic_column_cells(cells, _column_name, _context)
+          cells.select(&:has?).map(&:name)
+        end
+
         def name
           "DynamicColumnsRowModel"
         end
@@ -27,7 +35,11 @@ RSpec.describe "Import With Dynamic Columns" do
       end
 
       def skill(value, skill_name)
-        { name: skill_name, level: value }
+        Class.new(OpenStruct) do
+          def has?
+            has == "1"
+          end
+        end.new({ name: skill_name, has: value })
       end
 
       class << self
@@ -65,9 +77,8 @@ RSpec.describe "Import With Dynamic Columns" do
 
           it "adds skills to users" do
             Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
-              row_model.skills.each do |skill_data|
-                skill = Skill.find_or_create_by(name: skill_data[:name])
-                row_model.user.skills << skill if skill_data[:level] == "1"
+              row_model.skills.each do |skill_name|
+                row_model.user.skills << Skill.find_or_create_by(name: skill_name)
               end
 
               expect(row_model.user.skills).to be_truthy
