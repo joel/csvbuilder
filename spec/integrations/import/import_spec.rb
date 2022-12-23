@@ -27,6 +27,12 @@ RSpec.describe "Import" do
       def user
         User.new(first_name: first_name, last_name: last_name, full_name: full_name)
       end
+
+      class << self
+        def name
+          "BasicImportModel"
+        end
+      end
     end
   end
 
