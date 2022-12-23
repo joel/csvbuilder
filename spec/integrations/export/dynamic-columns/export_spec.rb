@@ -59,8 +59,6 @@ RSpec.describe "Export With Dynamic Columns" do
           after { User.last.skills.delete_all }
 
           describe "export" do
-            let(:row_model)    { DynamicColumnsRowModel }
-            let(:export_model) { DynamicColumnsExportModel }
             let(:context)      { { skills: Skill.pluck(:name) } }
             let(:sub_context)  { {} }
             let(:exporter)     { Csvbuilder::Export::File.new(export_model, context) }
@@ -87,7 +85,14 @@ RSpec.describe "Export With Dynamic Columns" do
 
             context "with overriden export model" do
               let(:row_model) do
-                Class.new(DynamicColumnsRowModel) do
+                Class.new do
+                  include Csvbuilder::Model
+
+                  column :first_name, header: "Name"
+                  column :last_name, header: "Surname"
+
+                  dynamic_column :skills
+
                   class << self
                     # Safe to override
                     #
@@ -95,20 +100,10 @@ RSpec.describe "Export With Dynamic Columns" do
                     def format_dynamic_column_header(header_model, column_name, _context)
                       "#{column_name.upcase}: [#{header_model}]"
                     end
-                  end
-                end
-              end
 
-              let(:export_model) do
-                Class.new(row_model) do
-                  include Csvbuilder::Export
-                  class << self
                     def name
-                      "DynamicColumnsExportModel"
+                      "DynamicColumnsRowModel"
                     end
-                  end
-                  def skill(skill_name)
-                    source_model.skills.where(name: skill_name).exists? ? "1" : "0"
                   end
                 end
               end
