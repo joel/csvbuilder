@@ -1,5 +1,32 @@
 # frozen_string_literal: true
 
+module Test
+  class RowErrors
+    attr_reader :headers, :errors
+
+    def initialize
+      @errors = []
+    end
+
+    def append_errors(row_model)
+      @headers ||= begin
+        errors << row_model.class.headers
+        row_model.class.headers
+      end
+
+      row_in_error = []
+      row_model.source_attributes.map do |key, value|
+        row_in_error << if row_model.errors.messages[key].present?
+                          "Initial Value: [#{value}] - Errors: #{row_model.errors.messages[key].join(", ")}"
+                        else
+                          value
+                        end
+      end
+      errors << row_in_error
+    end
+  end
+end
+
 RSpec.describe "Import" do
   let(:row_model) do
     Class.new do
@@ -21,7 +48,7 @@ RSpec.describe "Import" do
 
       def initialize(*args)
         super
-        @row_in_errors = RowErrors.new
+        @row_in_errors = Test::RowErrors.new
       end
 
       after_next do
@@ -62,31 +89,6 @@ RSpec.describe "Import" do
           "BasicImportModel"
         end
       end
-    end
-  end
-
-  class RowErrors
-    attr_reader :headers, :errors
-
-    def initialize
-      @errors = []
-    end
-
-    def append_errors(row_model)
-      @headers ||= begin
-        errors << row_model.class.headers
-        row_model.class.headers
-      end
-
-      row_in_error = []
-      row_model.source_attributes.map do |key, value|
-        row_in_error << if row_model.errors.messages[key].present?
-                          "Initial Value: [#{value}] - Errors: #{row_model.errors.messages[key].join(", ")}"
-                        else
-                          value
-                        end
-      end
-      errors << row_in_error
     end
   end
 
