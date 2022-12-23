@@ -57,6 +57,8 @@ RSpec.describe "Import" do
 
           expect(user.full_name).to eq("John Doe")
         end
+
+        expect(User.count).to eq(1)
       end
     end
   end
