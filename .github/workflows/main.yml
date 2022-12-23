@@ -82,7 +82,11 @@ jobs:
         run: |
           bundle install
           bundle update csvbuilder-core
+          bundle update csvbuilder-dynamic-columns-core
+          bundle update csvbuilder-exporter
+          bundle update csvbuilder-dynamic-columns-exporter
           bundle update csvbuilder-importer
+          bundle update csvbuilder-dynamic-columns-importer
       -
         name: Run test suite
         run: |

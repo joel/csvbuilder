@@ -8,8 +8,11 @@ gem "activerecord", "~> 7.0"
 
 # Libraries dependencies
 gem "csvbuilder-core"
-gem "csvbuilder-importer"
+gem "csvbuilder-dynamic-columns-core"
 gem "csvbuilder-exporter"
+gem "csvbuilder-dynamic-columns-exporter"
+gem "csvbuilder-importer"
+gem "csvbuilder-dynamic-columns-importer"
 
 # Test dependencies
 gem "activesupport", "~> 7.0"
