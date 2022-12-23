@@ -11,6 +11,13 @@ RSpec.describe "Export With Dynamic Columns" do
       dynamic_column :skills
 
       class << self
+        # Safe to override
+        #
+        # @return [String] formatted header
+        def format_dynamic_column_header(header_model, column_name, _context)
+          "#{column_name.upcase}: [#{header_model}]"
+        end
+
         def name
           "DynamicColumnsRowModel"
         end
@@ -59,26 +66,40 @@ RSpec.describe "Export With Dynamic Columns" do
           after { User.last.skills.delete_all }
 
           describe "export" do
-            let(:context)      { { skills: Skill.pluck(:name) } }
+            let(:context) { { skills: Skill.pluck(:name) } }
             let(:sub_context)  { {} }
             let(:exporter)     { Csvbuilder::Export::File.new(export_model, context) }
 
+            it "shows the formatted dynamic headers" do
+              expect(row_model.dynamic_column_headers(context)).to eq(
+                [
+                  "SKILLS: [Ruby]",
+                  "SKILLS: [Python]",
+                  "SKILLS: [Javascript]"
+                ]
+              )
+            end
+
             it "has the right headers" do
-              expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+              expect(exporter.headers).to eq(
+                [
+                  "Name",
+                  "Surname",
+                  "SKILLS: [Ruby]",
+                  "SKILLS: [Python]",
+                  "SKILLS: [Javascript]"
+                ]
+              )
             end
 
-            it "shows the dynamic headers" do
-              expect(row_model.dynamic_column_headers(context)).to eq(%w[Ruby Python Javascript])
-            end
-
-            it "export users with their skills" do
+            it "exports users with their skills" do
               exporter.generate do |csv|
                 User.all.each do |user|
                   csv.append_model(user, sub_context)
                 end
               end
 
-              expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
+              expect(exporter.to_s).to eq("Name,Surname,SKILLS: [Ruby],SKILLS: [Python],SKILLS: [Javascript]\nJohn,Doe,1,0,0\n")
             end
           end
         end
