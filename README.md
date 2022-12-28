@@ -9,7 +9,9 @@
 5. [csvbuilder-dynamic-columns-exporter](https://rubygems.org/gems/csvbuilder-dynamic-columns-exporter)
 6. [csvbuilder-dynamic-columns-importer](https://rubygems.org/gems/csvbuilder-dynamic-columns-importer)
 
-This library was written to be extendable in mind. This extremely modular set of libraries lets you extend your application's functionalities to best suit your need.
+This library was written to be extendable in mind. The extremely modular set of libraries lets you extend your application's functionalities to best suit your need.
+
+Feel free to install only what your application needs.
 
 ## Installation
 
