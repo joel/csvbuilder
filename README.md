@@ -63,16 +63,15 @@ end
 You need to provide both object collection and exporter class as follow:
 
 ```ruby
-collections = [OpenStruct.new(first_name: "John", last_name: "Doe", full_name: "John Doe")]
+collection = [OpenStruct.new(first_name: "John", last_name: "Doe", full_name: "John Doe")]
 
 exporter = Csvbuilder::Export::File.new(UserExportModel, context = {})
 
 exporter.headers
 # => "First Name", "Last Name", "Full Name", "Email"
 
-
 exporter.generate do |csv|
-  collections.each do |user|
+  collection.each do |user|
     csv.append_model(user, another_context: true)
   end
 end
@@ -83,7 +82,7 @@ end
 
 # Importing
 
-The importing part is the more critical part. It carries validations to handle complex use cases. You have all the power of the `ActiveModel::Validations`. The validations happen in the importer class, and it acts as policies. You can couple them with the model itself, though. It is still recommended to handle model errors at a higher level to not pair the ImportModel with the model too much.
+The importing part is the more critical part. It carries validations to handle complex use cases. You have all the power of the `ActiveModel::Validations`. The validations happen in the importer class, and it acts as policies. You can couple them with the model itself, though. It is still recommended to handle model errors at a higher level to not pair the `ImportModel` with the model too much.
 
 ```ruby
 class UserImportModel < UserRowModel
@@ -93,16 +92,16 @@ class UserImportModel < UserRowModel
   validates :last_name, presence: true, length: { minimum: 2 }
 
   def full_name
-      "#{first_name} #{last_name}"
+    "#{first_name} #{last_name}"
   end
 
   def user
-      User.new(first_name: first_name, last_name: last_name, full_name: full_name)
+    User.new(first_name: first_name, last_name: last_name, full_name: full_name)
   end
 
   # Skip if the row is not valid, the user is not valid or the user already exists
   def skip?
-      super || !user.valid? || user.exists?
+    super || !user.valid? || user.exists?
   end
 end
 ```
