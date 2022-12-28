@@ -1,10 +1,15 @@
 # Csvbuilder
 
-Csvbuilder is a collection of libraries that lets you export and import CSV data.
+[Csvbuilder](https://rubygems.org/gems/csvbuilder-collection) is a wrapper for a collection of libraries that lets you export and import CSV data easily.
 
-This library is written with the way to extend itself easily in mind.
+1. [csvbuilder-core](https://rubygems.org/gems/csvbuilder-core)
+2. [csvbuilder-exporter](https://rubygems.org/gems/csvbuilder-exporter)
+3. [csvbuilder-importer](https://rubygems.org/gems/csvbuilder-importer)
+4. [csvbuilder-dynamic-columns-core](https://rubygems.org/gems/csvbuilder-dynamic-columns-core)
+5. [csvbuilder-dynamic-columns-exporter](https://rubygems.org/gems/csvbuilder-dynamic-columns-exporter)
+6. [csvbuilder-dynamic-columns-importer](https://rubygems.org/gems/csvbuilder-dynamic-columns-importer)
 
-It's straightforward to extend the functionalities of your application.
+This library was written to be extendable in mind. This extremely modular set of libraries lets you extend your application's functionalities to best suit your need.
 
 ## Installation
 
@@ -24,10 +29,10 @@ The library comes we a nice simple DSL. The model should correspond to the heade
 
 ```ruby
 class UserRowModel
-	include Csvbuilder::Model
+  include Csvbuilder::Model
 
-	column :first_name
-	column :last_name
+  column :first_name
+  column :last_name
 end
 ```
 
@@ -41,13 +46,13 @@ If you want to add a piece of information for export only, like in the following
 
 ```ruby
 class UserExportModel < UserRowModel
-	include Csvbuilder::Export
+  include Csvbuilder::Export
 
-	column :email, header: "Corporate Email"
+  column :email, header: "Corporate Email"
 
-	def email
-		"#{first_name}.#{last_name}@example.co.uk".downcase
-	end
+  def email
+    "#{first_name}.#{last_name}@example.co.uk".downcase
+  end
 end
 ```
 
@@ -80,24 +85,23 @@ The importing part is the more critical part. It carries validations to handle c
 
 ```ruby
 class UserImportModel < UserRowModel
-	include Csvbuilder::Import
+  include Csvbuilder::Import
 
-	validates :first_name, presence: true, length: { minimum: 2 }
-	validates :last_name, presence: true, length: { minimum: 2 }
+  validates :first_name, presence: true, length: { minimum: 2 }
+  validates :last_name, presence: true, length: { minimum: 2 }
 
-	def full_name
-		"#{first_name} #{last_name}"
-	end
+  def full_name
+      "#{first_name} #{last_name}"
+  end
 
-	def user
-		User.new(first_name: first_name, last_name: last_name, full_name: full_name)
-	end
+  def user
+      User.new(first_name: first_name, last_name: last_name, full_name: full_name)
+  end
 
-	# Skip if the row is not valid, the user is not valid or the user already exists
-	def skip?
-		super || !user.valid? || user.exists?
-	end
-
+  # Skip if the row is not valid, the user is not valid or the user already exists
+  def skip?
+      super || !user.valid? || user.exists?
+  end
 end
 ```
 
