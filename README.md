@@ -1,8 +1,10 @@
 # Csvbuilder
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/csvbuilder`. To experiment with that code, run `bin/console` for an interactive prompt.
+Csvbuilder is a collection of libraries that lets you export and import CSV data.
 
-TODO: Delete this and the text above, and describe your gem
+This library is written with the way to extend itself easily in mind.
+
+It's straightforward to extend the functionalities of your application.
 
 ## Installation
 
@@ -16,7 +18,122 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
-TODO: Write usage instructions here
+# Model
+
+The library comes we a nice simple DSL. The model should correspond to the headers and cells of a CSV row.
+
+```ruby
+class UserRowModel
+	include Csvbuilder::Model
+
+	column :first_name
+	column :last_name
+end
+```
+
+Generally, the defined columns will match your database columns. But it is definitely not necessary.
+
+The model is meant to be the standard area for import and export. We'll see in the next section how those two differ.
+
+# Exporting
+
+If you want to add a piece of information for export only, like in the following example, the Corporate Email, you can compute data in the Export Class.
+
+```ruby
+class UserExportModel < UserRowModel
+	include Csvbuilder::Export
+
+	column :email, header: "Corporate Email"
+
+	def email
+		"#{first_name}.#{last_name}@example.co.uk".downcase
+	end
+end
+```
+
+## How to export
+
+You need to provide both object collection and exporter class as follow:
+
+```ruby
+collections = [OpenStruct.new(first_name: "John", last_name: "Doe", full_name: "John Doe")]
+
+exporter = Csvbuilder::Export::File.new(UserExportModel, context = {})
+
+exporter.headers
+# => "First Name", "Last Name", "Full Name", "Email"
+
+
+exporter.generate do |csv|
+  collections.each do |user|
+    csv.append_model(user, another_context: true)
+  end
+end
+# => "First Name,Last Name,Full Name,Email\nJohn,Doe,John Doe,john.doe@example.co.uk\n"
+```
+
+[More on Exporter]
+
+# Importing
+
+The importing part is the more critical part. It carries validations to handle complex use cases. You have all the power of the `ActiveModel::Validations`. The validations happen in the importer class, and it acts as policies. You can couple them with the model itself, though. It is still recommended to handle model errors at a higher level to not pair the ImportModel with the model too much.
+
+```ruby
+class UserImportModel < UserRowModel
+	include Csvbuilder::Import
+
+	validates :first_name, presence: true, length: { minimum: 2 }
+	validates :last_name, presence: true, length: { minimum: 2 }
+
+	def full_name
+		"#{first_name} #{last_name}"
+	end
+
+	def user
+		User.new(first_name: first_name, last_name: last_name, full_name: full_name)
+	end
+
+	# Skip if the row is not valid, the user is not valid or the user already exists
+	def skip?
+		super || !user.valid? || user.exists?
+	end
+
+end
+```
+
+## How to import
+
+For importing, you must provide the CSV file and the Import Class. The `Import::File` will skip an invalid importer, a not valid user or an already existing user.
+
+```ruby
+csv_source = [
+  ["First name", "Last name"],
+  ["John"      , "Doe"      ],
+]
+
+CSV.generate do |csv|
+  csv_source.each { |row| csv << row }
+end
+
+file = Tempfile.new(["input_file", ".csv"])
+
+Csvbuilder::Import::File
+  .new(file.path, UserImportModel, options = {}).each do |row_model|
+	  row_model.user.save
+end
+```
+
+[More on Importer]
+
+# Dynamic columns
+
+The headers are dynamic and take a collection, so it doesn’t need a strict definition like other columns. Dynamic columns are a relation between header value and cell value.
+
+[More on dynamic columns]
+
+## Credits
+
+This project is inspired by the open source library [CsvRowModel](https://github.com/finalcad/csv_row_model) written by [Steve Chung](https://github.com/s12chung)  but unfortunately unused, unmaintained and currently broken. Only the core concept and the architecture was re-used, and some none essential features were removed.
 
 ## Development
 
