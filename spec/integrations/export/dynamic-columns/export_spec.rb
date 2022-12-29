@@ -8,7 +8,7 @@ RSpec.describe "Export With Dynamic Columns" do
       column :first_name, header: "Name"
       column :last_name, header: "Surname"
 
-      dynamic_column :skills, header_models_context_key: :abilities
+      dynamic_column :skills, as: :abilities
 
       class << self
         def name
