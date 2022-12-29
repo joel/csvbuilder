@@ -21,6 +21,11 @@ RSpec.describe "Export" do
       include Csvbuilder::Export
 
       column :full_name, header: "Full Name"
+      column :email, header: "Email"
+
+      def email
+        "#{first_name}.#{last_name}@example.co.uk".downcase
+      end
 
       class << self
         def name
@@ -41,7 +46,7 @@ RSpec.describe "Export" do
       subject(:exporter) { Csvbuilder::Export::File.new(export_model, context) }
 
       it "has the right headers" do
-        expect(exporter.headers).to eq(["First Name", "Last Name", "Full Name"])
+        expect(exporter.headers).to eq(["First Name", "Last Name", "Full Name", "Email"])
       end
 
       it "exports users data as CSV" do
@@ -51,7 +56,7 @@ RSpec.describe "Export" do
           end
         end
 
-        expect(exporter.to_s).to eq("First Name,Last Name,Full Name\nJohn,Doe,John Doe\n")
+        expect(exporter.to_s).to eq("First Name,Last Name,Full Name,Email\nJohn,Doe,John Doe,john.doe@example.co.uk\n")
       end
     end
   end
