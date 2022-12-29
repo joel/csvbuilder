@@ -138,7 +138,7 @@ The headers are dynamic and take a collection, so it doesn’t need a strict def
 
 ## Credits
 
-This project is inspired by the open source library [CsvRowModel](https://github.com/finalcad/csv_row_model) written by [Steve Chung](https://github.com/s12chung)  but unfortunately unused, unmaintained and currently broken. Only the core concept and the architecture was re-used, and some none essential features were removed.
+This project is inspired by the open-source library [CsvRowModel](https://github.com/finalcad/csv_row_model) written by [Steve Chung](https://github.com/s12chung). Unfortunately, this library is unmaintained and currently broken, and it depends on other unmaintained libraries. The purpose is to keep the core concepts and the architecture, removing all non-essential features and unmaintained dependencies and adding test coverage with Rails and Ruby matrices to track any broken version, past and future. Splitting the library into several gems lets projects use only the needed parts.
 
 ## Development
 
