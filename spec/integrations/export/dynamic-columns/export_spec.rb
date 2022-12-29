@@ -28,6 +28,8 @@ RSpec.describe "Export With Dynamic Columns" do
           end
         end
 
+        # Same as:
+        # dynamic_column :skills, as: :abilities, header: ->(name) { "skills: [#{name}]" }
         def format_dynamic_column_header(header_model, column_name, _context)
           "#{column_name}: [#{header_model}]"
         end
