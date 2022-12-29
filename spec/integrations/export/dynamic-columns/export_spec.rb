@@ -27,6 +27,10 @@ RSpec.describe "Export With Dynamic Columns" do
             end
           end
         end
+
+        def format_dynamic_column_header(header_model, column_name, _context)
+          "#{column_name}: [#{header_model}]"
+        end
       end
     end
   end
@@ -77,11 +81,13 @@ RSpec.describe "Export With Dynamic Columns" do
             let(:exporter)     { Csvbuilder::Export::File.new(export_model, context) }
 
             it "has the right headers" do
-              expect(exporter.headers).to eq(%w[Name Surname Ruby Python Javascript])
+              expect(exporter.headers).to eq(["Name", "Surname", "skills: [Ruby]", "skills: [Python]",
+                                              "skills: [Javascript]"])
             end
 
             it "shows the dynamic headers" do
-              expect(row_model.dynamic_column_headers(context)).to eq(%w[Ruby Python Javascript])
+              expect(row_model.dynamic_column_headers(context)).to eq(["skills: [Ruby]", "skills: [Python]",
+                                                                       "skills: [Javascript]"])
             end
 
             it "export users with their skills" do
@@ -91,7 +97,7 @@ RSpec.describe "Export With Dynamic Columns" do
                 end
               end
 
-              expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
+              expect(exporter.to_s).to eq("Name,Surname,skills: [Ruby],skills: [Python],skills: [Javascript]\nJohn,Doe,1,0,0\n")
             end
           end
         end
