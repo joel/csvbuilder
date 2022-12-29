@@ -14,6 +14,19 @@ RSpec.describe "Export With Dynamic Columns" do
         def name
           "DynamicColumnsRowModel"
         end
+
+        def format_dynamic_column_cells(cells, _column_name, _context)
+          cells.map do |cell|
+            case cell
+            when true
+              "1"
+            when false
+              "0"
+            else
+              "N/A"
+            end
+          end
+        end
       end
     end
   end
@@ -23,7 +36,7 @@ RSpec.describe "Export With Dynamic Columns" do
       include Csvbuilder::Export
 
       def skill(skill_name)
-        source_model.skills.where(name: skill_name).exists? ? "1" : "0"
+        source_model.skills.where(name: skill_name).exists?
       end
 
       class << self
