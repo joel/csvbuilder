@@ -42,6 +42,8 @@ Generally, the defined columns will match your database columns. But it is defin
 
 The model is meant to be the standard area for import and export. We'll see in the next section how those two differ.
 
+[More on Model](https://github.com/joel/csvbuilder-core)
+
 # Exporting
 
 If you want to add a piece of information for export only, like in the following example, the Corporate Email, you can compute data in the Export Class.
@@ -78,7 +80,7 @@ end
 # => "First Name,Last Name,Full Name,Email\nJohn,Doe,John Doe,john.doe@example.co.uk\n"
 ```
 
-[More on Exporter]
+[More on Exporter](https://github.com/joel/csvbuilder-exporter)
 
 # Importing
 
@@ -128,13 +130,13 @@ Csvbuilder::Import::File
 end
 ```
 
-[More on Importer]
+[More on Importer](https://github.com/joel/csvbuilder-importer)
 
 # Dynamic columns
 
 The headers are dynamic and take a collection, so it doesn’t need a strict definition like other columns. Dynamic columns are a relation between header value and cell value.
 
-[More on dynamic columns]
+[More on dynamic columns](https://github.com/joel/csvbuilder-dynamic-columns-core)
 
 ## Credits
 
