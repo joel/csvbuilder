@@ -2,6 +2,8 @@
 
 [Csvbuilder](https://rubygems.org/gems/csvbuilder-collection) is a wrapper for a collection of libraries that lets you export and import CSV data easily.
 
+It carries [integration specs](https://github.com/joel/csvbuilder/tree/main/spec/integrations) which are perfect for understanding all the feature of `csvbuilder` and having a concrete example of how each part work.
+
 1. [csvbuilder-core](https://rubygems.org/gems/csvbuilder-core)
 2. [csvbuilder-dynamic-columns-core](https://rubygems.org/gems/csvbuilder-dynamic-columns-core)
 
