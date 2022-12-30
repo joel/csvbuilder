@@ -56,7 +56,35 @@ RSpec.describe "Export" do
       it "exports users data as CSV" do
         exporter.generate do |csv|
           User.all.each do |user|
-            csv.append_model(user, another_context: true)
+            row_model = csv.append_model(user, another_context: true)
+
+            # There is only one iteration here.
+
+            expect(row_model.attributes).to eql(
+              {
+                first_name: "John",
+                last_name: "Doe",
+                full_name: "John Doe",
+                email: "john.doe@example.co.uk"
+              }
+            )
+
+            expect(row_model.original_attributes).to eql(
+              {
+                email: "- john.doe@example.co.uk -",
+                first_name: "- John -",
+                full_name: "- John Doe -",
+                last_name: "- Doe -"
+              }
+            )
+            expect(row_model.formatted_attributes).to eql(row_model.original_attributes)
+            expect(row_model.source_attributes).to    eql(row_model.attributes)
+
+            expect(row_model.attribute_objects.values.map(&:class)).to eql [Csvbuilder::Export::Attribute] * 4
+
+            expect(row_model.attribute_objects[:first_name].value).to eql "- John -"
+            expect(row_model.attribute_objects[:first_name].formatted_value).to eql "- John -"
+            expect(row_model.attribute_objects[:first_name].source_value).to eql "John"
           end
         end
 

@@ -93,7 +93,21 @@ RSpec.describe "Export With Dynamic Columns" do
             it "export users with their skills" do
               exporter.generate do |csv|
                 User.all.each do |user|
-                  csv.append_model(user, sub_context)
+                  row_model = csv.append_model(user, sub_context)
+
+                  # There is only one iteration here.
+
+                  expect(row_model.attribute_objects[:skills]).to be_a Csvbuilder::Export::DynamicColumnAttribute
+
+                  # Formatted values with format_dynamic_column_cells
+                  expect(row_model.attribute_objects[:skills].value).to eql %w[1 0 0]
+
+                  # Unformatted values
+                  expect(row_model.attribute_objects[:skills].unformatted_value).to eql [true, false, false]
+                  expect(row_model.attribute_objects[:skills].source_cells).to eql [true, false, false]
+
+                  # Formatted values with format_cell
+                  expect(row_model.attribute_objects[:skills].formatted_cells).to eql ["- true -", "- false -", "- false -"]
                 end
               end
 

@@ -74,7 +74,43 @@ RSpec.describe "Export With Dynamic Columns" do
             it "export users with their skills" do
               exporter.generate do |csv|
                 User.all.each do |user|
-                  csv.append_model(user, sub_context)
+                  row_model = csv.append_model(user, sub_context)
+
+                  # There is only one iteration here.
+
+                  expect(row_model.attributes).to eql(
+                    {
+                      first_name: "John",
+                      last_name: "Doe",
+                      skills: %w[1 0 0]
+
+                    }
+                  )
+
+                  expect(row_model.original_attributes).to eql(row_model.attributes)
+                  expect(row_model.formatted_attributes).to eql(row_model.attributes)
+
+                  # Do not carry over the dynamic columns.
+                  expect(row_model.source_attributes).to eql({ first_name: "John", last_name: "Doe" })
+
+                  expect(row_model.attribute_objects.values.map(&:class)).to eql(
+                    [
+                      Csvbuilder::Export::Attribute,
+                      Csvbuilder::Export::Attribute,
+                      Csvbuilder::Export::DynamicColumnAttribute
+                    ]
+                  )
+
+                  expect(row_model.attribute_objects[:first_name].value).to eql "John"
+                  expect(row_model.attribute_objects[:first_name].formatted_value).to eql "John"
+                  expect(row_model.attribute_objects[:first_name].source_value).to eql "John"
+
+                  expect(row_model.attribute_objects[:skills]).to be_a Csvbuilder::Export::DynamicColumnAttribute
+                  expect(row_model.attribute_objects[:skills].value).to eql %w[1 0 0]
+                  expect(row_model.attribute_objects[:skills].unformatted_value).to eql %w[1 0 0]
+
+                  expect(row_model.attribute_objects[:skills].source_cells).to eql %w[1 0 0]
+                  expect(row_model.attribute_objects[:skills].formatted_cells).to eql %w[1 0 0]
                 end
               end
 

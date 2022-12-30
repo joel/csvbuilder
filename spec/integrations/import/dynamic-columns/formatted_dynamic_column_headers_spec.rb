@@ -77,6 +77,11 @@ RSpec.describe "Import With Dynamic Columns" do
 
           it "adds skills to users" do
             Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
+              expect(row_model.headers).to eq(%w[Name Surname])
+              expect(row_model.source_headers).to eq(["First name", "Last name", "Ruby", "Python", "Javascript"])
+              expect(row_model.dynamic_column_source_headers).to eq(%w[Ruby Python Javascript])
+              expect(row_model.formatted_dynamic_column_headers).to eq(["SKILLS: Ruby", "SKILLS: Python", "SKILLS: Javascript"])
+
               row_model.skills.each do |skill|
                 row_model.user.skills << Skill.find_or_create_by(name: skill.name) if skill.has?
               end
