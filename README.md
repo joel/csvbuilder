@@ -3,11 +3,7 @@
 [Csvbuilder](https://rubygems.org/gems/csvbuilder-collection) is a wrapper for a collection of libraries that lets you export and import CSV data easily.
 
 1. [csvbuilder-core](https://rubygems.org/gems/csvbuilder-core)
-2. [csvbuilder-exporter](https://rubygems.org/gems/csvbuilder-exporter)
-3. [csvbuilder-importer](https://rubygems.org/gems/csvbuilder-importer)
-4. [csvbuilder-dynamic-columns-core](https://rubygems.org/gems/csvbuilder-dynamic-columns-core)
-5. [csvbuilder-dynamic-columns-exporter](https://rubygems.org/gems/csvbuilder-dynamic-columns-exporter)
-6. [csvbuilder-dynamic-columns-importer](https://rubygems.org/gems/csvbuilder-dynamic-columns-importer)
+2. [csvbuilder-dynamic-columns-core](https://rubygems.org/gems/csvbuilder-dynamic-columns-core)
 
 This library was written to be extendable in mind. The extremely modular set of libraries lets you extend your application's functionalities to best suit your need.
 
@@ -141,6 +137,15 @@ The headers are dynamic and take a collection, so it doesn’t need a strict def
 ## Credits
 
 This project is inspired by the open-source library [CsvRowModel](https://github.com/finalcad/csv_row_model) written by [Steve Chung](https://github.com/s12chung). Unfortunately, this library is unmaintained and currently broken, and it depends on other unmaintained libraries. The purpose is to keep the core concepts and the architecture, removing all non-essential features and unmaintained dependencies and adding test coverage with Rails and Ruby matrices to track any broken version, past and future. Splitting the library into several gems lets projects use only the needed parts.
+
+## Dependencies
+
+1. [csvbuilder-core](https://rubygems.org/gems/csvbuilder-core)
+2. [csvbuilder-exporter](https://rubygems.org/gems/csvbuilder-exporter)
+3. [csvbuilder-importer](https://rubygems.org/gems/csvbuilder-importer)
+4. [csvbuilder-dynamic-columns-core](https://rubygems.org/gems/csvbuilder-dynamic-columns-core)
+5. [csvbuilder-dynamic-columns-exporter](https://rubygems.org/gems/csvbuilder-dynamic-columns-exporter)
+6. [csvbuilder-dynamic-columns-importer](https://rubygems.org/gems/csvbuilder-dynamic-columns-importer)
 
 ## Development
 
