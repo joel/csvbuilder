@@ -8,7 +8,7 @@ RSpec.describe "Export With Dynamic Columns" do
       column :first_name, header: "Name"
       column :last_name, header: "Surname"
 
-      dynamic_column :skills
+      dynamic_column :skills, as: :abilities
 
       class << self
         def name
@@ -22,7 +22,7 @@ RSpec.describe "Export With Dynamic Columns" do
     Class.new(row_model) do
       include Csvbuilder::Export
 
-      def skill(skill_name)
+      def ability(skill_name)
         source_model.skills.where(name: skill_name).exists? ? "1" : "0"
       end
 
@@ -59,7 +59,7 @@ RSpec.describe "Export With Dynamic Columns" do
           after { User.last.skills.delete_all }
 
           describe "export" do
-            let(:context)      { { skills: Skill.pluck(:name) } }
+            let(:context)      { { abilities: Skill.pluck(:name) } }
             let(:sub_context)  { {} }
             let(:exporter)     { Csvbuilder::Export::File.new(export_model, context) }
 

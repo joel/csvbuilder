@@ -8,12 +8,11 @@ RSpec.describe "Export With Dynamic Columns" do
       column :first_name, header: "Name"
       column :last_name, header: "Surname"
 
-      dynamic_column :skills
+      dynamic_column :skills # , header: ->(name) { "SKILLS: [#{name}]" }
 
       class << self
-        # Safe to override
-        #
-        # @return [String] formatted header
+        # Same as:
+        # dynamic_column :skills, header: ->(name) { "SKILLS: [#{name}]" }
         def format_dynamic_column_header(header_model, column_name, _context)
           "#{column_name.upcase}: [#{header_model}]"
         end
