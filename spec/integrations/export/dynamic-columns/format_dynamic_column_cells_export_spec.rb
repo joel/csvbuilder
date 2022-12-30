@@ -15,6 +15,12 @@ RSpec.describe "Export With Dynamic Columns" do
           "DynamicColumnsRowModel"
         end
 
+        # NOTE: This is apply to regular cells, not dynamic column cells
+        # dynamic column cells are formatted by `format_dynamic_column_cells`
+        def format_cell(cell, _column_name, _context)
+          "- #{cell} -"
+        end
+
         def format_dynamic_column_cells(cells, _column_name, _context)
           cells.map do |cell|
             case cell
@@ -91,7 +97,7 @@ RSpec.describe "Export With Dynamic Columns" do
                 end
               end
 
-              expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\nJohn,Doe,1,0,0\n")
+              expect(exporter.to_s).to eq("Name,Surname,Ruby,Python,Javascript\n- John -,- Doe -,1,0,0\n")
             end
           end
         end

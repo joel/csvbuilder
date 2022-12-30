@@ -36,6 +36,7 @@ RSpec/DescribeClass:
     - 'spec/integrations/import/dynamic-columns/import_spec.rb'
     - 'spec/integrations/export/dynamic-columns/aliasing_as_export_spec.rb'
     - 'spec/integrations/export/dynamic-columns/format_dynamic_column_cells_export_spec.rb'
+    - 'spec/integrations/import/dynamic-columns/format_dynamic_column_headers_spec.rb'
 
 # Offense count: 9
 # Configuration parameters: CountAsOne.
@@ -55,6 +56,7 @@ RSpec/NestedGroups:
 Style/OpenStructUse:
   Exclude:
     - 'spec/integrations/import/dynamic-columns/format_dynamic_column_cells_spec.rb'
+    - 'spec/integrations/import/dynamic-columns/format_dynamic_column_headers_spec.rb'
 
 RSpec/RepeatedExample:
   Exclude:

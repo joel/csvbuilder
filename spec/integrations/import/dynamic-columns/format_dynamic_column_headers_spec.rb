@@ -8,21 +8,13 @@ RSpec.describe "Import With Dynamic Columns" do
       column :first_name, header: "Name"
       column :last_name, header: "Surname"
 
-      dynamic_column :skills
+      dynamic_column :skills # , header: ->(name) { "SKILLS: #{name}" }
 
       class << self
-        # NOTE: This is apply to regular cells, not dynamic column cells
-        # dynamic column cells are formatted by `format_dynamic_column_cells`
-        def format_cell(cell, _column_name, _context)
-          "CELL: #{cell}"
-        end
-
-        # Safe to override. Method applied to each dynamic_column attribute
-        #
-        # @param cells [Array] Array of values
-        # @param column_name [Symbol] Dynamic column name
-        def format_dynamic_column_cells(cells, _column_name, _context)
-          cells.select(&:has?).map(&:name)
+        # Same as:
+        # dynamic_column :skills, header: ->(name) { "SKILLS: #{name}" }
+        def format_dynamic_column_header(header_model, column_name, _context)
+          "#{column_name.upcase}: #{header_model}"
         end
 
         def name
@@ -36,22 +28,18 @@ RSpec.describe "Import With Dynamic Columns" do
     Class.new(row_model) do
       include Csvbuilder::Import
 
-      def full_name
-        %i[first_name last_name].map do |column_name|
-          public_send(column_name).gsub("CELL: ", "") # Remove formatting
-        end.join(" ")
-      end
-
       def user
-        User.find_by(full_name: full_name)
+        User.find_by(full_name: "#{first_name} #{last_name}")
       end
 
       def skill(value, skill_name)
+        name = skill_name.gsub("SKILLS: ", "") # Remove formatting
+
         Class.new(OpenStruct) do
           def has?
             has == "1"
           end
-        end.new({ name: skill_name, has: value })
+        end.new({ name: name, has: value })
       end
 
       class << self
@@ -89,8 +77,8 @@ RSpec.describe "Import With Dynamic Columns" do
 
           it "adds skills to users" do
             Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
-              row_model.skills.each do |skill_name|
-                row_model.user.skills << Skill.find_or_create_by(name: skill_name)
+              row_model.skills.each do |skill|
+                row_model.user.skills << Skill.find_or_create_by(name: skill.name) if skill.has?
               end
 
               expect(row_model.user.skills).to be_truthy
