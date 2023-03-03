@@ -65,7 +65,8 @@ RSpec.describe "Export" do
               }
             )
 
-            expect(row_model.original_attributes).to  eql(row_model.attributes)
+            expect(row_model.original_attributes).to eql(row_model.attributes)
+            expect(row_model.class.column_names).to eql(row_model.attributes.keys)
             expect(row_model.formatted_attributes).to eql(row_model.attributes)
             expect(row_model.source_attributes).to    eql(row_model.attributes)
 

@@ -51,7 +51,7 @@ RSpec.describe "Export" do
       subject(:exporter) { Csvbuilder::Export::File.new(export_model, context) }
 
       it "has the right headers" do
-        expect(exporter.headers).to eq(["First Name", "HEADER: last_name", "Full Name", "Email"])
+        expect(exporter.headers).to eq(["First Name", "HEADER: Last name", "Full Name", "Email"])
       end
 
       it "exports users data as CSV" do
@@ -61,7 +61,7 @@ RSpec.describe "Export" do
           end
         end
 
-        expect(exporter.to_s).to eq("First Name,HEADER: last_name,Full Name,Email\nJohn,Doe,John Doe,john.doe@example.co.uk\n")
+        expect(exporter.to_s).to eq("First Name,HEADER: Last name,Full Name,Email\nJohn,Doe,John Doe,john.doe@example.co.uk\n")
       end
     end
   end

@@ -54,7 +54,7 @@ RSpec.describe "Import" do
 
       it "imports users" do
         Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
-          expect(row_model.headers).to eq(["First Name", "HEADER: last_name"])
+          expect(row_model.headers).to eq(["First Name", "HEADER: Last name"])
           expect(row_model.source_headers).to eq(["First name", "Last name"])
 
           user = row_model.user
