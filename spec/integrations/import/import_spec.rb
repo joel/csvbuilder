@@ -39,33 +39,45 @@ RSpec.describe "Import" do
   context "without user" do
     before { User.delete_all }
 
-    describe "import" do
-      let(:csv_source) do
-        [
-          ["First name", "Last name"],
-          %w[John Doe]
-        ]
+    let(:csv_source) do
+      [
+        ["First name", "Last name"],
+        %w[John Doe]
+      ]
+    end
+    let(:importer) { Csvbuilder::Import::File.new(file.path, import_model, options) }
+    let(:row_enumerator) { importer.each }
+
+    describe "#each" do
+      context "when everything goes well" do
+        it "imports users" do
+          row_enumerator.each do |row_model|
+            expect(row_model.headers).to eq(["First Name", "Last Name"])
+            expect(row_model.source_headers).to eq(["First name", "Last name"])
+            expect(row_model.source_row).to eq(%w[John Doe])
+
+            expect(row_model.source_attributes.values).to eq(row_model.source_row)
+            expect(row_model.formatted_attributes.values).to eq(row_model.original_attributes.values)
+
+            user = row_model.user
+            expect(user).to be_valid
+            expect do
+              user.save
+            end.to change(User, :count).by(+1)
+
+            expect(user.full_name).to eq("John Doe")
+          end
+
+          expect(User.count).to eq(1)
+        end
       end
 
-      it "imports users" do
-        Csvbuilder::Import::File.new(file.path, import_model, options).each do |row_model|
-          expect(row_model.headers).to eq(["First Name", "Last Name"])
-          expect(row_model.source_headers).to eq(["First name", "Last name"])
-          expect(row_model.source_row).to eq(%w[John Doe])
+      context "when abort!" do
+        before { importer.abort! }
 
-          expect(row_model.source_attributes.values).to eq(row_model.source_row)
-          expect(row_model.formatted_attributes.values).to eq(row_model.original_attributes.values)
-
-          user = row_model.user
-          expect(user).to be_valid
-          expect do
-            user.save
-          end.to change(User, :count).by(+1)
-
-          expect(user.full_name).to eq("John Doe")
+        it "aborts import" do
+          expect { row_enumerator.next }.to raise_error(StopIteration)
         end
-
-        expect(User.count).to eq(1)
       end
     end
   end
