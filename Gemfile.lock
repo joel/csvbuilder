@@ -43,9 +43,9 @@ GEM
       activemodel (>= 5.2, < 8)
       activesupport (>= 5.2, < 8)
       csvbuilder-core
-    csvbuilder-importer (0.1.3)
-      activemodel (>= 5.2, < 8)
-      activesupport (>= 5.2, < 8)
+    csvbuilder-importer (0.1.5.1)
+      activemodel (>= 5.2)
+      activesupport (>= 5.2)
       csvbuilder-core
     database_cleaner-active_record (2.1.0)
       activerecord (>= 5.a)
