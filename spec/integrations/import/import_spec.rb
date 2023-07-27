@@ -37,8 +37,6 @@ RSpec.describe "Import" do
   end
 
   context "without user" do
-    before { User.delete_all }
-
     let(:csv_source) do
       [
         ["First name", "Last name"],

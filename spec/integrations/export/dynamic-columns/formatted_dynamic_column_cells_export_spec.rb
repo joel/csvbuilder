@@ -58,8 +58,6 @@ RSpec.describe "Export With Dynamic Columns" do
       User.create(first_name: "John", last_name: "Doe", full_name: "John Doe")
     end
 
-    after { User.delete_all }
-
     context "with skills" do
       before do
         %w[Ruby Python Javascript].each do |skill_name|
@@ -67,15 +65,11 @@ RSpec.describe "Export With Dynamic Columns" do
         end
       end
 
-      after { Skill.delete_all }
-
       context "with dynamic columns" do
         context "with skilled user" do
           before do
             User.last.skills << Skill.where(name: "Ruby")
           end
-
-          after { User.last.skills.delete_all }
 
           describe "export" do
             let(:context)      { { skills: Skill.pluck(:name) } }

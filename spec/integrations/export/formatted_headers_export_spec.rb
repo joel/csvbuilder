@@ -45,8 +45,6 @@ RSpec.describe "Export" do
       User.create(first_name: "John", last_name: "Doe", full_name: "John Doe")
     end
 
-    after { User.delete_all }
-
     describe "export" do
       subject(:exporter) { Csvbuilder::Export::File.new(export_model, context) }
 

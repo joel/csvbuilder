@@ -93,7 +93,6 @@ RSpec.describe "Import" do
   end
 
   context "without user" do
-    before { User.delete_all }
 
     describe "import" do
       context "with invalid data" do

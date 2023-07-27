@@ -55,16 +55,12 @@ RSpec.describe "Import With Dynamic Columns" do
       User.create(first_name: "John", last_name: "Doe", full_name: "John Doe")
     end
 
-    after { User.delete_all }
-
     context "with skills" do
       before do
         %w[Ruby Python Javascript].each do |skill_name|
           Skill.create(name: skill_name)
         end
       end
-
-      after { Skill.delete_all }
 
       context "with dynamic columns" do
         describe "import" do
