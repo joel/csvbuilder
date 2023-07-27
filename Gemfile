@@ -15,6 +15,8 @@ gem "rubocop-performance"
 gem "rubocop-rake"
 gem "rubocop-rspec"
 
+gem "database_cleaner-active_record"
+
 # gem "csvbuilder-core", path: "../csvbuilder-core"
 # gem "csvbuilder-dynamic-columns-core", path: "../csvbuilder-dynamic-columns-core"
 # gem "csvbuilder-dynamic-columns-exporter", path: "../csvbuilder-dynamic-columns-exporter"
