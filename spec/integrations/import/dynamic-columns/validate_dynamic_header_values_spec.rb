@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe "Import With Dynamic Columns" do
+RSpec.describe "Validation Dynamic Headers Value Over Import" do
   let(:row_model) do
     Class.new do
       include Csvbuilder::Model
@@ -54,11 +54,9 @@ RSpec.describe "Import With Dynamic Columns" do
         end
       end
 
-      context "with dynamic columns" do
-
+      context "with importer validations" do
         let(:importer) do
           Class.new(Csvbuilder::Import::File) do
-
             after_next do
               next if end_of_file?
 
@@ -71,7 +69,7 @@ RSpec.describe "Import With Dynamic Columns" do
 
             def validate_dynamic_headers
               return unless defined?(Csvbuilder::Model::DynamicColumns)
-              return unless first_row?
+              return unless headers?
 
               current_row_model.dynamic_column_source_headers.each do |dynamic_header|
                 next if current_row_model.dynamic_column_header_scope.where(name: dynamic_header).exists?
@@ -80,10 +78,9 @@ RSpec.describe "Import With Dynamic Columns" do
               end
             end
 
-            def first_row?
+            def headers?
               current_row_model && previous_row_model.nil?
             end
-
           end
         end
 
@@ -99,12 +96,12 @@ RSpec.describe "Import With Dynamic Columns" do
             Skill.where(name: "Javascript").take.destroy
           end
 
-          it "adds skills to users" do
+          it "does not add data if validation fail" do
             row_enumerator = importer.new(file.path, import_model, options).each
 
-            expect {
+            expect do
               row_enumerator.next
-            }.to raise_error(StopIteration)
+            end.to raise_error(StopIteration)
           end
         end
       end
