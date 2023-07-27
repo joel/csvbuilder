@@ -42,7 +42,6 @@ RSpec.describe "Import" do
   end
 
   context "without user" do
-
     describe "import" do
       let(:csv_source) do
         [

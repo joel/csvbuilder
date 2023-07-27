@@ -93,7 +93,6 @@ RSpec.describe "Import" do
   end
 
   context "without user" do
-
     describe "import" do
       context "with invalid data" do
         let(:csv_source) do
