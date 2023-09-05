@@ -20,12 +20,19 @@ RSpec.describe "Import" do
     Class.new(row_model) do
       include Csvbuilder::Import
 
+      validates :first_name, presence: true, length: { minimum: 2 }
+      validate :custom_last_name
+
       def full_name
         "#{first_name} #{last_name}"
       end
 
       def user
         User.new(first_name: first_name, last_name: last_name, full_name: full_name)
+      end
+
+      def custom_last_name
+        errors.add(:last_name, "must be Doe") unless last_name == "Doe"
       end
 
       class << self
