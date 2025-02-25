@@ -44,16 +44,13 @@ jobs:
             gemfile: Gemfile
           -
             ruby: 3.4.2
-            gemfile: gemfiles/Gemfile.5.2._gemfile
-          -
-            ruby: 3.4.2
-            gemfile: gemfiles/Gemfile.6.1._gemfile
-          -
-            ruby: 3.4.2
             gemfile: gemfiles/Gemfile.6.1._gemfile
           -
             ruby: 3.4.2
             gemfile: gemfiles/Gemfile.7.0._gemfile
+          -
+            ruby: 3.4.2
+            gemfile: gemfiles/Gemfile.8.0._gemfile
 
     env:
       BUNDLE_GEMFILE: "${{ matrix.gemfile }}"
