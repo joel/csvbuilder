@@ -1,0 +1,27 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+# Runtime dependencies
+gem "activemodel", "~> 8.0"
+gem "activerecord", "~> 8.0"
+
+# Libraries dependencies
+gem "csvbuilder-core"
+gem "csvbuilder-dynamic-columns-core"
+gem "csvbuilder-exporter"
+gem "csvbuilder-dynamic-columns-exporter"
+gem "csvbuilder-importer"
+gem "csvbuilder-dynamic-columns-importer"
+
+# Test dependencies
+gem "activesupport", "~> 8.0"
+gem "sqlite3"
+
+# Development dependencies
+gem "rake"
+gem "rspec"
+gem "rubocop"
+gem "rubocop-performance"
+gem "rubocop-rake"
+gem "rubocop-rspec"
