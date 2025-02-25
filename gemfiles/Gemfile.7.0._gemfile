@@ -18,6 +18,7 @@ gem "csvbuilder-dynamic-columns-importer"
 # Test dependencies
 gem "activesupport", "~> 7.0"
 gem "sqlite3"
+gem "database_cleaner"
 
 # Development dependencies
 gem "rake"
