@@ -48,9 +48,9 @@ jobs:
           -
             ruby: 3.4.2
             gemfile: gemfiles/Gemfile.7.0._gemfile
-          -
-            ruby: 3.4.2
-            gemfile: gemfiles/Gemfile.8.0._gemfile
+          # -
+          #   ruby: 3.4.2
+          #   gemfile: gemfiles/Gemfile.8.0._gemfile
 
     env:
       BUNDLE_GEMFILE: "${{ matrix.gemfile }}"
