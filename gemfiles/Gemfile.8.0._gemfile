@@ -5,6 +5,7 @@ source "https://rubygems.org"
 # Runtime dependencies
 gem "activemodel", "~> 8.0"
 gem "activerecord", "~> 8.0"
+gem "csv"
 
 # Libraries dependencies
 gem "csvbuilder-core"
