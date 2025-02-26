@@ -4,7 +4,7 @@ require "csvbuilder"
 require "active_record"
 # [Getting rid of logger breaks rails 7.0.8 on ruby 3.3.6 #1077](https://github.com/ruby-concurrency/concurrent-ruby/issues/1077)
 # [Ensure the logger gem is loaded in Rails 7.0 #54264](https://github.com/rails/rails/pull/54264/files)
-require "logger"
+# require "logger"
 require "tempfile"
 
 ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
