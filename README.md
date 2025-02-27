@@ -103,6 +103,10 @@ class UserImportModel < UserRowModel
   def skip?
     super || !user.valid? || user.exists?
   end
+
+  def abort?
+    "#{first_name} #{last_name}" == "Bill Gates"
+  end
 end
 ```
 
