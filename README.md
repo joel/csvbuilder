@@ -103,6 +103,11 @@ class UserImportModel < UserRowModel
   def skip?
     super || !user.valid? || user.exists?
   end
+
+  # Abort the import
+  def abort?
+    "#{first_name} #{last_name}" == "Bill Gates"
+  end
 end
 ```
 
