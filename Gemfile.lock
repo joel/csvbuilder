@@ -43,8 +43,8 @@ GEM
     csvbuilder-dynamic-columns-core (0.1.1)
       activesupport (>= 5.2, < 8)
       csvbuilder-core
-    csvbuilder-dynamic-columns-exporter (0.1.2)
-      activesupport (>= 5.2, < 8)
+    csvbuilder-dynamic-columns-exporter (0.1.3)
+      activesupport (>= 5.2)
       csvbuilder-core (~> 0.1)
       csvbuilder-dynamic-columns-core (~> 0.1)
       csvbuilder-exporter (~> 0.1)
