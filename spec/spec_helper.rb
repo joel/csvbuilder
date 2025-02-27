@@ -11,7 +11,7 @@ ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:"
 # ActiveRecord::Base.logger = Logger.new($stdout)
 # ActiveRecord::Migration.verbose = true
 
-Dir["#{Dir.pwd}/spec/support/**/*.rb"].sort.each { |f| require f }
+Dir["#{Dir.pwd}/spec/support/**/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
