@@ -44,12 +44,12 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
 
         def with_skills(skills)
           new_class = Class.new(self) do
-            @skill_columns = []
+            @skill_columns = {}
 
             skills.each.with_index do |skill, index|
               column_name = :"skill_#{index}"
               define_skill_column(skill, name: column_name)
-              @skill_columns << columns[column_name].merge(column_name:)
+              @skill_columns[column_name] = columns[column_name]
             end
 
             class << self
@@ -61,8 +61,8 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
             end
 
             def skills
-              skill_columns.map do |column|
-                column.merge!(value: public_send(column[:column_name]))
+              skill_columns.map do |column_name, column|
+                column.merge!(value: public_send(column_name))
               end
             end
           end
