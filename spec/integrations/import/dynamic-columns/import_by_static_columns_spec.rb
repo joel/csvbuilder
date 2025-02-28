@@ -59,12 +59,6 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
             def skill_columns
               self.class.skill_columns
             end
-
-            def skills
-              skill_columns.map do |column_name, column|
-                column.merge!(value: public_send(column_name))
-              end
-            end
           end
 
           Object.send(:remove_const, "DynamicColumnsImportModel") if Object.const_defined?(:DynamicColumnsImportModel)
@@ -119,9 +113,12 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
 
           it "adds skills to users" do
             Csvbuilder::Import::File.new(file.path, importer_with_dynamic_columns, options).each do |row_model|
-              row_model.skills.each do |skill_data|
+              row_model.skill_columns.each do |column_name, skill_data|
+                row_cell_value = row_model.attribute_objects[column_name].value # Get the value of the cell
+
                 skill = Skill.find_or_create_by(name: skill_data[:header])
-                row_model.user.skills << skill if skill_data[:value] == "1"
+
+                row_model.user.skills << skill if row_cell_value == "1"
               end
 
               expect(row_model.user.skills).to be_truthy
