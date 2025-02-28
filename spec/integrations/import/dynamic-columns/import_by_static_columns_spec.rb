@@ -58,7 +58,8 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
             end
           end
 
-          Object.const_set(name, new_class) unless Object.const_defined?(name)
+          Object.send(:remove_const, "DynamicColumnsImportModel") if Object.const_defined?(:DynamicColumnsImportModel)
+          Object.const_set(:DynamicColumnsImportModel, new_class)
 
           new_class
         end
@@ -85,6 +86,10 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
 
       context "with dynamic columns" do
         let(:importer_with_dynamic_columns) { import_model.with_skills(Skill.all) }
+
+        # before do
+        #   stub_const("DynamicColumnsImportModel", importer_with_dynamic_columns)
+        # end
 
         describe "import" do
           let(:csv_source) do
