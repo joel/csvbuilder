@@ -28,6 +28,15 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
         { name: skill_name, level: value }
       end
 
+      validates :first_name, presence: true, length: { minimum: 2 }
+      validates :last_name, presence: true, length: { minimum: 2 }
+
+      # Skip if the row is not valid,
+      # the user is not found or the user is not valid
+      def skip?
+        super || user.nil?
+      end
+
       class << self
         def name
           "DynamicColumnsImportModel"
@@ -40,7 +49,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
             skills.each.with_index do |skill, index|
               column_name = :"skill_#{index}"
               define_skill_column(skill, name: column_name)
-              @skill_columns << column_name
+              @skill_columns << columns[column_name].merge(column_name:)
             end
 
             class << self
@@ -52,9 +61,9 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
             end
 
             def skills
-              skill_columns
-                .flat_map { public_send it }
-                .reject(&:blank?)
+              skill_columns.map do |column|
+                column.merge!(value: public_send(column[:column_name]))
+              end
             end
           end
 
@@ -66,7 +75,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
 
         def define_skill_column(skill, name:)
           column(name, header: skill.name, required: false)
-          validates(name, inclusion: Skill.pluck(&:name), allow_blank: true)
+          validates(name, inclusion: %w[0 1], allow_blank: true)
         end
       end
     end
@@ -86,10 +95,6 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
 
       context "with dynamic columns" do
         let(:importer_with_dynamic_columns) { import_model.with_skills(Skill.all) }
-
-        # before do
-        #   stub_const("DynamicColumnsImportModel", importer_with_dynamic_columns)
-        # end
 
         describe "import" do
           let(:csv_source) do
@@ -115,14 +120,38 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
           it "adds skills to users" do
             Csvbuilder::Import::File.new(file.path, importer_with_dynamic_columns, options).each do |row_model|
               row_model.skills.each do |skill_data|
-                skill = Skill.find_or_create_by(name: skill_data[:name])
-                row_model.user.skills << skill if skill_data[:level] == "1"
+                skill = Skill.find_or_create_by(name: skill_data[:header])
+                row_model.user.skills << skill if skill_data[:value] == "1"
               end
 
               expect(row_model.user.skills).to be_truthy
               expect(row_model.user.skills.count).to eq(2)
               expect(row_model.user.skills.map(&:name)).to match_array(%w[Ruby Javascript])
             end
+          end
+        end
+
+        context "with invalid data" do
+          let(:csv_source) do
+            [
+              ["First name", "Last name", "Ruby", "Python", "Javascript"],
+              %w[John Doe 1 0 2]
+            ]
+          end
+
+          before do
+            allow_any_instance_of(importer_with_dynamic_columns).to receive(:skip?).and_return(false)
+          end
+
+          it "imports users" do
+            importer = Csvbuilder::Import::File.new(file.path, importer_with_dynamic_columns, options)
+
+            enum = importer.each
+            row_model = enum.next
+
+            expect(row_model).not_to be_valid
+
+            expect(row_model.errors.full_messages).to eq(["Skill 2 is not included in the list"])
           end
         end
       end
