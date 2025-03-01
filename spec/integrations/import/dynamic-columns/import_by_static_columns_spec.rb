@@ -140,7 +140,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
             allow_any_instance_of(importer_with_dynamic_columns).to receive(:skip?).and_return(false)
           end
 
-          it "imports users" do
+          it "does not import users" do
             importer = Csvbuilder::Import::File.new(file.path, importer_with_dynamic_columns, options)
 
             enum = importer.each
