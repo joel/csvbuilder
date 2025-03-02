@@ -26,8 +26,11 @@ RSpec.describe "Import With Dynamic Columns" do
         User.find_by(full_name: "#{first_name} #{last_name}")
       end
 
-      def skill(value, skill_name)
-        { name: skill_name, level: value }
+      def skill(cell_value, header_name)
+        name  = header_name # Skill Name, i.e. Ruby, Python, Javascript
+        level = cell_value  # Have it, or not 0/1
+
+        { name:, level: }
       end
 
       class << self

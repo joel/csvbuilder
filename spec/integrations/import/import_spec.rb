@@ -46,7 +46,7 @@ RSpec.describe "Import" do
   context "without user" do
     let(:csv_source) do
       [
-        ["First name", "Last name"],
+        ["First Name", "Last Name"],
         %w[John Doe]
       ]
     end
@@ -58,7 +58,7 @@ RSpec.describe "Import" do
         it "imports users" do
           row_enumerator.each do |row_model|
             expect(row_model.headers).to eq(["First Name", "Last Name"])
-            expect(row_model.source_headers).to eq(["First name", "Last name"])
+            expect(row_model.source_headers).to eq(["First Name", "Last Name"])
             expect(row_model.source_row).to eq(%w[John Doe])
 
             expect(row_model.source_attributes.values).to eq(row_model.source_row)
