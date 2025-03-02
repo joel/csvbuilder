@@ -93,7 +93,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
         describe "import" do
           let(:csv_source) do
             [
-              ["First name", "Last name", "Ruby", "Python", "Javascript"],
+              %w[Name Surname Ruby Python Javascript],
               %w[John Doe 1 0 1]
             ]
           end
@@ -131,7 +131,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
         context "with invalid data" do
           let(:csv_source) do
             [
-              ["First name", "Last name", "Ruby", "Python", "Javascript"],
+              %w[Name Surname Ruby Python Javascript],
               %w[John Doe 1 0 2]
             ]
           end
@@ -149,6 +149,27 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
             expect(row_model).not_to be_valid
 
             expect(row_model.errors.full_messages).to eq(["Skill 2 is not included in the list"])
+          end
+        end
+
+        context "with invalid headers" do
+          let(:csv_source) do
+            [
+              ["Name", "Surname", "Ruby", "Python", "Visual Basic"],
+              %w[John Doe 1 0 2]
+            ]
+          end
+
+          let(:importer) { Csvbuilder::Import::File.new(file.path, importer_with_dynamic_columns, options) }
+
+          it "does not import users" do
+            expect { importer.each.next }.to raise_error(StopIteration)
+
+            expect(importer.errors.full_messages).to eq(
+              [
+                "Headers mismatch. Given headers (Name, Surname, Ruby, Python, Visual Basic). Expected headers (Name, Surname, Ruby, Python, Javascript). Unrecognized headers (Visual Basic)."
+              ]
+            )
           end
         end
       end

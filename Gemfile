@@ -18,6 +18,7 @@ gem "rubocop-rspec"
 gem "activerecord"
 gem "database_cleaner-active_record"
 
+gem "ostruct"
 gem "sqlite3"
 
 # gem "csvbuilder-core", path: "../csvbuilder-core"
