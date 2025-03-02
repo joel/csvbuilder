@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    csvbuilder-collection (0.1.2)
+    csvbuilder-collection (0.2.0)
       csv
       csvbuilder-core (~> 0.1)
       csvbuilder-dynamic-columns-core (~> 0.1)
