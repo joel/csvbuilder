@@ -18,7 +18,10 @@ end
 
 # Load database support files
 ENV["DATABASE"] ||= "sqlite3"
-database = ENV.fetch("DATABASE", nil)
+database = ENV.fetch("DATABASE", "sqlite3")
+
+puts("Loading support/databases/#{database}/connection")
+
 require "support/databases/#{database}/connection"
 
 require "support/database_cleaner"

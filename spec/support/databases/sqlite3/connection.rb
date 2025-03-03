@@ -5,12 +5,15 @@ ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:"
 RSpec.configure do |config|
   config.before(:suite) do
     # Load the schema
+    puts "Loading schema"
     load File.expand_path("../sqlite3/schema.rb", __dir__)
 
     # Load the models
+    puts "Loading models"
     load File.expand_path("../../models.rb", __dir__)
 
     # Load the data
+    puts "Loading data"
     load File.expand_path("../../data.rb", __dir__)
   end
 end

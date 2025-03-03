@@ -24,6 +24,12 @@ def load_data!
       Tag.create!(name: tag[:name], area: area_instance)
     end
   end
+
+  %w[Ruby Python Javascript].each do |skill_name|
+    Skill.create(name: skill_name)
+  end
+
+  puts "Data loaded"
 end
 
 load_data!
