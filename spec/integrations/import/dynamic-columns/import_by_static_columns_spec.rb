@@ -18,7 +18,7 @@ module Csvbuilder
 
       # DSL method to define a dynamic column
       def dynamic_column(column_type, **opts)
-        dynamic_columns_definitions.merge!(column_type => { allow_blank: false, required: true }.reverse_merge(opts))
+        dynamic_columns_definitions.merge!(column_type => { allow_blank: false, required: true, header_method: :name }.reverse_merge(opts))
       end
 
       def with_dynamic_columns(collection_name:, collection:)
@@ -126,17 +126,8 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
       # Define the DSL for dynamic skill columns.
       # The :skill dynamic column will extract its header using the `name` method (or proc) on each entry,
       # and use the given options to set up validations.
-      dynamic_column :skill,
-                     header_method: :name,
-                     required: false,
-                     inclusion: %w[0 1],
-                     allow_blank: true
-
-      dynamic_column :tag,
-                     header_method: :name,
-                     required: false,
-                     inclusion: ->(area) { area.tags.pluck(:name) },
-                     allow_blank: true
+      dynamic_column :skill, inclusion: %w[0 1]
+      dynamic_column :tag, inclusion: ->(area) { area.tags.pluck(:name) }
 
       class << self
         def name
