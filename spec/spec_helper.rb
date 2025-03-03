@@ -7,11 +7,21 @@ require "active_record"
 # require "logger"
 require "tempfile"
 
-ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
-# ActiveRecord::Base.logger = Logger.new($stdout)
-# ActiveRecord::Migration.verbose = true
+# Load support files
+Dir["./spec/support/**/*.rb"].each do |file|
+  next if /databases|data/.match?(file)
 
-Dir["#{Dir.pwd}/spec/support/**/*.rb"].each { |f| require f }
+  puts("Loading #{file}")
+
+  require file
+end
+
+# Load database support files
+ENV["DATABASE"] ||= "sqlite3"
+database = ENV.fetch("DATABASE", nil)
+require "support/databases/#{database}/connection"
+
+require "support/database_cleaner"
 
 RSpec.configure do |config|
   config.filter_run focus: true
@@ -28,33 +38,4 @@ RSpec.configure do |config|
   end
 
   config.include CsvString
-end
-
-ActiveRecord::Schema.define do
-  create_table :users, force: true do |t|
-    t.string :first_name
-    t.string :last_name
-    t.string :full_name
-  end
-  create_table :skills_users, force: true do |t|
-    t.references :skill
-    t.references :user
-  end
-  create_table :skills, force: true do |t|
-    t.string :name
-  end
-end
-
-class User < ActiveRecord::Base
-  self.table_name = :users
-
-  validates :full_name, presence: true
-
-  has_and_belongs_to_many :skills, join_table: :skills_users
-end
-
-class Skill < ActiveRecord::Base
-  self.table_name = :skills
-
-  validates :name, presence: true
 end
