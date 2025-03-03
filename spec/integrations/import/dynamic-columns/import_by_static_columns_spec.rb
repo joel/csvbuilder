@@ -112,7 +112,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
       dynamic_column :skill,
                      header_method: :name,
                      required: false,
-                     inclusion: ->(_entry) { %w[0 1] },
+                     inclusion: %w[0 1],
                      allow_blank: true
 
       class << self

@@ -9,7 +9,7 @@ require "tempfile"
 
 # Load support files
 Dir["./spec/support/**/*.rb"].each do |file|
-  next if /databases|data/.match?(file)
+  next if /databases|models|data/.match?(file) # "support/databases/#{database}/connection" load models and data
 
   puts("Loading #{file}")
 

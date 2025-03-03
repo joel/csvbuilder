@@ -7,6 +7,9 @@ RSpec.configure do |config|
     # Load the schema
     load File.expand_path("../sqlite3/schema.rb", __dir__)
 
+    # Load the models
+    load File.expand_path("../../models.rb", __dir__)
+
     # Load the data
     load File.expand_path("../../data.rb", __dir__)
   end

@@ -1,15 +1,29 @@
 # frozen_string_literal: true
 
-class User < ActiveRecord::Base
-  self.table_name = :users
+def load_data!
+  {
+    areas: [
+      {
+        name: "Area 1",
+        tags: [
+          { name: "Tag 1" },
+          { name: "Tag 2" }
+        ]
+      }, {
+        name: "Area 2",
+        tags: [
+          { name: "Tag 3" },
+          { name: "Tag 4" }
+        ]
+      }
+    ]
+  }[:areas].each do |area|
+    area_instance = Area.create!(name: area[:name])
 
-  validates :full_name, presence: true
-
-  has_and_belongs_to_many :skills, join_table: :skills_users
+    area[:tags].each do |tag|
+      Tag.create!(name: tag[:name], area: area_instance)
+    end
+  end
 end
 
-class Skill < ActiveRecord::Base
-  self.table_name = :skills
-
-  validates :name, presence: true
-end
+load_data!
