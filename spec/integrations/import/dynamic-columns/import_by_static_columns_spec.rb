@@ -106,8 +106,6 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
 
       include Csvbuilder::MetaDynamicColumns
 
-      include Csvbuilder::MetaDynamicColumns
-
       # Define the DSL for dynamic skill columns.
       # The :skill dynamic column will extract its header using the `name` method (or proc) on each entry,
       # and use the given options to set up validations.
