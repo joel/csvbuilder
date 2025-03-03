@@ -7,44 +7,64 @@ module Csvbuilder
     end
 
     module ClassMethods
+      # Store DSL definitions in a hash keyed by the dynamic column type
+      def dynamic_columns_definitions
+        @dynamic_columns_definitions ||= {}
+      end
+
+      # DSL method to define a dynamic column
+      # e.g. dynamic_column :skill, header_method: :name, required: false, inclusion: ->(entry){ %w[0 1] }, allow_blank: true
+      def dynamic_column(column_type, **opts)
+        dynamic_columns_definitions[column_type] = opts
+      end
+
       def with_dynamic_columns(collection_name:, collection:)
+        # Retrieve DSL options for the given collection name
+        dsl_opts = dynamic_columns_definitions[collection_name]
+        if dsl_opts.nil?
+          raise NotImplementedError, "No dynamic column definition found for #{collection_name}. Please define one using dynamic_column."
+        end
+
         Class.new(self) do
-          # Create a container to store the dynamic column definitions
+          # Initialize a container for dynamic column definitions
           instance_variable_set(:"@#{collection_name}_columns", {})
 
           collection.each.with_index do |entry, index|
             column_name = :"#{collection_name}_#{index}"
-            # Build the expected method name based on the collection name.
-            method_name = "define_#{collection_name}_dynamic_column"
-            raise NotImplementedError, "You must implement #{method_name} in #{name}" unless respond_to?(method_name)
 
-            send(method_name, entry, column_name: column_name)
+            # Determine the header value using either a proc or a symbol
+            header_value = if dsl_opts[:header_method].respond_to?(:call)
+                             dsl_opts[:header_method].call(entry)
+                           else
+                             entry.send(dsl_opts[:header_method])
+                           end
 
-            # Store the column definition for later access.
+            # Determine the required value (default: false)
+            required_value = dsl_opts.fetch(:required, false)
+            column(column_name, header: header_value, required: required_value)
+
+            # Evaluate the inclusion option, which can be a proc or a collection
+            inclusion_value = if dsl_opts[:inclusion].respond_to?(:call)
+                                dsl_opts[:inclusion].call(entry)
+                              else
+                                dsl_opts[:inclusion]
+                              end
+
+            # Add validations based on DSL options
+            validates(column_name, inclusion: inclusion_value, allow_blank: dsl_opts[:allow_blank])
+
+            # Save the dynamic column definition for later reference
             instance_variable_get(:"@#{collection_name}_columns")[column_name] = columns[column_name]
           end
 
-          # Dynamically define a class-level reader for the dynamic columns.
+          # Define a class-level reader for the dynamic columns.
           singleton_class.send(:attr_reader, "#{collection_name}_columns")
 
-          # Define an instance-level method to access the dynamic columns.
+          # Define an instance-level accessor for the dynamic columns.
           define_method(:"#{collection_name}_columns") do
             self.class.send(:"#{collection_name}_columns")
           end
         end
-      end
-
-      # If a dynamic column definition method is not defined, raise an error.
-      def method_missing(method_name, *args, **kwargs, &)
-        if /^define_.*_dynamic_column$/.match?(method_name.to_s)
-          raise NotImplementedError, "Please implement #{method_name} in your importer class"
-        end
-
-        super
-      end
-
-      def respond_to_missing?(method_name, include_private = false)
-        method_name.to_s =~ /^define_.*_dynamic_column$/ || super
       end
     end
   end
@@ -81,22 +101,28 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
       validates :first_name, presence: true, length: { minimum: 2 }
       validates :last_name, presence: true, length: { minimum: 2 }
 
-      include Csvbuilder::MetaDynamicColumns
-
       # Skip if the row is not valid,
       # the user is not found or the user is not valid
       def skip?
         super || user.nil?
       end
 
+      include Csvbuilder::MetaDynamicColumns
+
+      include Csvbuilder::MetaDynamicColumns
+
+      # Define the DSL for dynamic skill columns.
+      # The :skill dynamic column will extract its header using the `name` method (or proc) on each entry,
+      # and use the given options to set up validations.
+      dynamic_column :skill,
+                     header_method: :name,
+                     required: false,
+                     inclusion: ->(_entry) { %w[0 1] },
+                     allow_blank: true
+
       class << self
         def name
           "DynamicColumnsImportModel"
-        end
-
-        def define_skill_dynamic_column(entry, column_name:)
-          column(column_name, header: entry.name, required: false)
-          validates(column_name, inclusion: %w[0 1], allow_blank: true)
         end
       end
     end
