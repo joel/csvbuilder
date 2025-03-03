@@ -42,22 +42,23 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
           "DynamicColumnsImportModel"
         end
 
-        def with_skills(skills)
+        def with_dynmic_columns(collection_name:, collection:)
           new_class = Class.new(self) do
-            @skill_columns = {}
+            instance_variable_set(:"@#{collection_name}_columns", {})
 
-            skills.each.with_index do |skill, index|
-              column_name = :"skill_#{index}"
-              define_skill_column(skill, name: column_name)
-              @skill_columns[column_name] = columns[column_name]
+            collection.each.with_index do |entry, index|
+              column_name = :"#{collection_name}_#{index}"
+              define_dynamic_column(entry, column_name: column_name)
+              instance_variable_get(:"@#{collection_name}_columns")[column_name] = columns[column_name]
             end
 
             class << self
               attr_reader :skill_columns
+              # attr_reader :"#{collection_name}_columns"
             end
 
-            def skill_columns
-              self.class.skill_columns
+            define_method(:"#{collection_name}_columns") do
+              self.class.send(:"#{collection_name}_columns")
             end
           end
 
@@ -67,9 +68,9 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
           new_class
         end
 
-        def define_skill_column(skill, name:)
-          column(name, header: skill.name, required: false)
-          validates(name, inclusion: %w[0 1], allow_blank: true)
+        def define_dynamic_column(entry, column_name:)
+          column(column_name, header: entry.name, required: false)
+          validates(column_name, inclusion: %w[0 1], allow_blank: true)
         end
       end
     end
@@ -88,7 +89,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
       end
 
       context "with dynamic columns" do
-        let(:importer_with_dynamic_columns) { import_model.with_skills(Skill.all) }
+        let(:importer_with_dynamic_columns) { import_model.with_dynmic_columns(collection_name: :skill, collection: Skill.all) }
 
         describe "import" do
           let(:csv_source) do
