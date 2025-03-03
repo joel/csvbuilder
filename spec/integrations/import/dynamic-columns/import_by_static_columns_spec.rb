@@ -23,14 +23,18 @@ module Csvbuilder
 
       def with_dynamic_columns(collection_name:, collection:)
         # Retrieve DSL options for the given collection name
+        # i.e dynamic_column :tag, inclusion: %[operational strategic]
+        # dynamic_column :category, inclusion: ->(group) { group.categories.pluck(:name) },
         dsl_opts = dynamic_columns_definitions[collection_name]
         unless dsl_opts
           raise NotImplementedError, "No dynamic column definition found for #{collection_name}. Please define one using dynamic_column."
         end
 
+        # Create a new subclass of the current class
         new_class = Class.new(self) do
           instance_variable_set(:"@#{collection_name}_columns", {})
 
+          # Define a method to access the collection
           collection.each.with_index do |entry, index|
             column_name = :"#{collection_name}_#{index}"
 
@@ -42,6 +46,7 @@ module Csvbuilder
                            end
 
             required_value = dsl_opts.fetch(:required, false)
+            # Define the dynamic column as static column
             column(column_name, header: header_value, required: required_value)
 
             inclusion_value = if dsl_opts[:inclusion].respond_to?(:call)
@@ -50,6 +55,7 @@ module Csvbuilder
                                 dsl_opts[:inclusion]
                               end
 
+            # We add the inclusion validation to the column, which can depends upon the record.
             validates(column_name, inclusion: inclusion_value, allow_blank: dsl_opts[:allow_blank])
             instance_variable_get(:"@#{collection_name}_columns")[column_name] = columns[column_name]
           end
@@ -64,6 +70,7 @@ module Csvbuilder
         end
 
         # Copy over any existing dynamic columns from the parent to the new subclass.
+        # Otherwise, the new subclass will not have access to the previous defined dynamic columns.
         instance_variables.each do |var|
           if var.to_s.end_with?("_columns") && var != :"@#{collection_name}_columns"
             new_class.instance_variable_set(var, instance_variable_get(var))
@@ -71,7 +78,7 @@ module Csvbuilder
           end
         end
 
-        new_class
+        new_class # Masquerade the extends class and make it chainable
       end
     end
   end
