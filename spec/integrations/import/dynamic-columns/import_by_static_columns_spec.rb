@@ -7,60 +7,57 @@ module Csvbuilder
     end
 
     module ClassMethods
-      # Store DSL definitions in a hash keyed by the dynamic column type
+      # Ensure the DSL definitions are stored on the class and inherited
       def dynamic_columns_definitions
-        @dynamic_columns_definitions ||= {}
+        @dynamic_columns_definitions ||= if superclass.respond_to?(:dynamic_columns_definitions)
+                                           superclass.dynamic_columns_definitions.dup
+                                         else
+                                           {}
+                                         end
       end
 
       # DSL method to define a dynamic column
-      # e.g. dynamic_column :skill, header_method: :name, required: false, inclusion: ->(entry){ %w[0 1] }, allow_blank: true
       def dynamic_column(column_type, **opts)
-        dynamic_columns_definitions[column_type] = opts
+        dynamic_columns_definitions.merge!(column_type => opts)
       end
 
       def with_dynamic_columns(collection_name:, collection:)
         # Retrieve DSL options for the given collection name
         dsl_opts = dynamic_columns_definitions[collection_name]
-        if dsl_opts.nil?
+        unless dsl_opts
           raise NotImplementedError, "No dynamic column definition found for #{collection_name}. Please define one using dynamic_column."
         end
 
         Class.new(self) do
-          # Initialize a container for dynamic column definitions
           instance_variable_set(:"@#{collection_name}_columns", {})
 
           collection.each.with_index do |entry, index|
             column_name = :"#{collection_name}_#{index}"
 
-            # Determine the header value using either a proc or a symbol
+            # Evaluate header value using a proc or symbol.
             header_value = if dsl_opts[:header_method].respond_to?(:call)
                              dsl_opts[:header_method].call(entry)
                            else
                              entry.send(dsl_opts[:header_method])
                            end
 
-            # Determine the required value (default: false)
             required_value = dsl_opts.fetch(:required, false)
             column(column_name, header: header_value, required: required_value)
 
-            # Evaluate the inclusion option, which can be a proc or a collection
             inclusion_value = if dsl_opts[:inclusion].respond_to?(:call)
                                 dsl_opts[:inclusion].call(entry)
                               else
                                 dsl_opts[:inclusion]
                               end
 
-            # Add validations based on DSL options
             validates(column_name, inclusion: inclusion_value, allow_blank: dsl_opts[:allow_blank])
-
-            # Save the dynamic column definition for later reference
             instance_variable_get(:"@#{collection_name}_columns")[column_name] = columns[column_name]
           end
 
-          # Define a class-level reader for the dynamic columns.
+          # Dynamically define a class-level reader for the dynamic columns.
           singleton_class.send(:attr_reader, "#{collection_name}_columns")
 
-          # Define an instance-level accessor for the dynamic columns.
+          # And define an instance-level accessor.
           define_method(:"#{collection_name}_columns") do
             self.class.send(:"#{collection_name}_columns")
           end
