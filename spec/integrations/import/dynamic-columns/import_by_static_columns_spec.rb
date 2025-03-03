@@ -1,5 +1,55 @@
 # frozen_string_literal: true
 
+module Csvbuilder
+  module MetaDynamicColumns
+    def self.included(base)
+      base.extend ClassMethods
+    end
+
+    module ClassMethods
+      def with_dynamic_columns(collection_name:, collection:)
+        Class.new(self) do
+          # Create a container to store the dynamic column definitions
+          instance_variable_set(:"@#{collection_name}_columns", {})
+
+          collection.each.with_index do |entry, index|
+            column_name = :"#{collection_name}_#{index}"
+            # Build the expected method name based on the collection name.
+            method_name = "define_#{collection_name}_dynamic_column"
+            raise NotImplementedError, "You must implement #{method_name} in #{name}" unless respond_to?(method_name)
+
+            send(method_name, entry, column_name: column_name)
+
+            # Store the column definition for later access.
+            instance_variable_get(:"@#{collection_name}_columns")[column_name] = columns[column_name]
+          end
+
+          # Dynamically define a class-level reader for the dynamic columns.
+          singleton_class.send(:attr_reader, "#{collection_name}_columns")
+
+          # Define an instance-level method to access the dynamic columns.
+          define_method(:"#{collection_name}_columns") do
+            self.class.send(:"#{collection_name}_columns")
+          end
+        end
+      end
+
+      # If a dynamic column definition method is not defined, raise an error.
+      def method_missing(method_name, *args, **kwargs, &)
+        if /^define_.*_dynamic_column$/.match?(method_name.to_s)
+          raise NotImplementedError, "Please implement #{method_name} in your importer class"
+        end
+
+        super
+      end
+
+      def respond_to_missing?(method_name, include_private = false)
+        method_name.to_s =~ /^define_.*_dynamic_column$/ || super
+      end
+    end
+  end
+end
+
 RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
   let(:row_model) do
     Class.new do
@@ -31,6 +81,8 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
       validates :first_name, presence: true, length: { minimum: 2 }
       validates :last_name, presence: true, length: { minimum: 2 }
 
+      include Csvbuilder::MetaDynamicColumns
+
       # Skip if the row is not valid,
       # the user is not found or the user is not valid
       def skip?
@@ -42,33 +94,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
           "DynamicColumnsImportModel"
         end
 
-        def with_dynamic_columns(collection_name:, collection:)
-          new_class = Class.new(self) do
-            instance_variable_set(:"@#{collection_name}_columns", {})
-
-            collection.each.with_index do |entry, index|
-              column_name = :"#{collection_name}_#{index}"
-              define_dynamic_column(entry, column_name: column_name)
-              instance_variable_get(:"@#{collection_name}_columns")[column_name] = columns[column_name]
-            end
-
-            class << self
-              attr_reader :skill_columns
-              # attr_reader :"#{collection_name}_columns"
-            end
-
-            define_method(:"#{collection_name}_columns") do
-              self.class.send(:"#{collection_name}_columns")
-            end
-          end
-
-          Object.send(:remove_const, "DynamicColumnsImportModel") if Object.const_defined?(:DynamicColumnsImportModel)
-          Object.const_set(:DynamicColumnsImportModel, new_class)
-
-          new_class
-        end
-
-        def define_dynamic_column(entry, column_name:)
+        def define_skill_dynamic_column(entry, column_name:)
           column(column_name, header: entry.name, required: false)
           validates(column_name, inclusion: %w[0 1], allow_blank: true)
         end
