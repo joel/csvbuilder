@@ -18,7 +18,7 @@ module Csvbuilder
 
       # DSL method to define a dynamic column
       def dynamic_column(column_type, **opts)
-        dynamic_columns_definitions.merge!(column_type => opts)
+        dynamic_columns_definitions.merge!(column_type => { allow_blank: false, required: true }.reverse_merge(opts))
       end
 
       def with_dynamic_columns(collection_name:, collection:)
@@ -28,7 +28,7 @@ module Csvbuilder
           raise NotImplementedError, "No dynamic column definition found for #{collection_name}. Please define one using dynamic_column."
         end
 
-        Class.new(self) do
+        new_class = Class.new(self) do
           instance_variable_set(:"@#{collection_name}_columns", {})
 
           collection.each.with_index do |entry, index|
@@ -62,6 +62,16 @@ module Csvbuilder
             self.class.send(:"#{collection_name}_columns")
           end
         end
+
+        # Copy over any existing dynamic columns from the parent to the new subclass.
+        instance_variables.each do |var|
+          if var.to_s.end_with?("_columns") && var != :"@#{collection_name}_columns"
+            new_class.instance_variable_set(var, instance_variable_get(var))
+            new_class.singleton_class.send(:attr_reader, var.to_s.delete_prefix("@"))
+          end
+        end
+
+        new_class
       end
     end
   end
@@ -115,6 +125,12 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
                      inclusion: %w[0 1],
                      allow_blank: true
 
+      dynamic_column :tag,
+                     header_method: :name,
+                     required: false,
+                     inclusion: ->(area) { area.tags.pluck(:name) },
+                     allow_blank: true
+
       class << self
         def name
           "DynamicColumnsImportModel"
@@ -133,16 +149,44 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
         %w[Ruby Python Javascript].each do |skill_name|
           Skill.create(name: skill_name)
         end
+
+        {
+          areas: [
+            {
+              name: "Area 1",
+              tags: [
+                { name: "Tag 1" },
+                { name: "Tag 2" }
+              ]
+            }, {
+              name: "Area 2",
+              tags: [
+                { name: "Tag 3" },
+                { name: "Tag 4" }
+              ]
+            }
+          ]
+        }[:areas].each do |area|
+          area_instance = Area.create!(name: area[:name])
+
+          area[:tags].each do |tag|
+            Tag.create!(name: tag[:name], area: area_instance)
+          end
+        end
       end
 
       context "with dynamic columns" do
-        let(:importer_with_dynamic_columns) { import_model.with_dynamic_columns(collection_name: :skill, collection: Skill.all) }
+        let(:importer_with_dynamic_columns) do
+          import_model
+            .with_dynamic_columns(collection_name: :skill, collection: Skill.all)
+            .with_dynamic_columns(collection_name: :tag, collection: Area.all)
+        end
 
         describe "import" do
           let(:csv_source) do
             [
-              %w[Name Surname Ruby Python Javascript],
-              %w[John Doe 1 0 1]
+              ["Name", "Surname", "Ruby", "Python", "Javascript", "Area 1", "Area 2"],
+              ["John", "Doe", "1", "0", "1", "Tag 1", "Tag 3"]
             ]
           end
 
@@ -152,11 +196,11 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
           end
 
           it "adds skills to column names" do
-            expect(importer_with_dynamic_columns.column_names).to match_array(%i[first_name last_name skill_0 skill_1 skill_2])
+            expect(importer_with_dynamic_columns.column_names).to match_array(%i[first_name last_name skill_0 skill_1 skill_2 tag_0 tag_1])
           end
 
           it "adds skills to headers" do
-            expect(importer_with_dynamic_columns.headers).to match_array(%w[Name Surname Ruby Python Javascript])
+            expect(importer_with_dynamic_columns.headers).to contain_exactly("Name", "Surname", "Ruby", "Python", "Javascript", "Area 1", "Area 2")
           end
 
           it "adds skills to users" do
@@ -174,13 +218,31 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
               expect(row_model.user.skills.map(&:name)).to match_array(%w[Ruby Javascript])
             end
           end
+
+          it "adds tags to users" do
+            Csvbuilder::Import::File.new(file.path, importer_with_dynamic_columns, options).each do |row_model|
+              row_model.tag_columns.each do |column_name, tag_data|
+                row_cell_value = row_model.attribute_objects[column_name].value # Get the value of the cell
+
+                area = Area.find_by(name: tag_data[:header])
+
+                row_model.user.taggings.create(tag: area.tags.find_by(name: row_cell_value)) if area
+              end
+
+              expect(row_model.user.taggings).to be_truthy
+              expect(row_model.user.taggings.count).to eq(2)
+              expect(
+                row_model.user.taggings.map { |t| t.tag.name }
+              ).to eq(["Tag 1", "Tag 3"])
+            end
+          end
         end
 
         context "with invalid data" do
           let(:csv_source) do
             [
-              %w[Name Surname Ruby Python Javascript],
-              %w[John Doe 1 0 2]
+              ["Name", "Surname", "Ruby", "Python", "Javascript", "Area 1", "Area 2"],
+              ["John", "Doe", "1", "0", "2", "Tag 1", "Tag 3"]
             ]
           end
 
@@ -203,8 +265,8 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
         context "with invalid headers" do
           let(:csv_source) do
             [
-              ["Name", "Surname", "Ruby", "Python", "Visual Basic"],
-              %w[John Doe 1 0 2]
+              ["Name", "Surname", "Ruby", "Python", "Visual Basic", "Area 1", "Area 2"],
+              ["John", "Doe", "1", "0", "2", "Tag 1", "Tag 3"]
             ]
           end
 
@@ -215,7 +277,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
 
             expect(importer.errors.full_messages).to eq(
               [
-                "Headers mismatch. Given headers (Name, Surname, Ruby, Python, Visual Basic). Expected headers (Name, Surname, Ruby, Python, Javascript). Unrecognized headers (Visual Basic)."
+                "Headers mismatch. Given headers (Name, Surname, Ruby, Python, Visual Basic, Area 1, Area 2). Expected headers (Name, Surname, Ruby, Python, Javascript, Area 1, Area 2). Unrecognized headers (Visual Basic)."
               ]
             )
           end
