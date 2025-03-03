@@ -42,7 +42,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
           "DynamicColumnsImportModel"
         end
 
-        def with_dynmic_columns(collection_name:, collection:)
+        def with_dynamic_columns(collection_name:, collection:)
           new_class = Class.new(self) do
             instance_variable_set(:"@#{collection_name}_columns", {})
 
@@ -89,7 +89,7 @@ RSpec.describe "Import With Metaprogramming Instead Of Dynamic Columns" do
       end
 
       context "with dynamic columns" do
-        let(:importer_with_dynamic_columns) { import_model.with_dynmic_columns(collection_name: :skill, collection: Skill.all) }
+        let(:importer_with_dynamic_columns) { import_model.with_dynamic_columns(collection_name: :skill, collection: Skill.all) }
 
         describe "import" do
           let(:csv_source) do
